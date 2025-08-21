@@ -1,0 +1,232 @@
+/* Sticky Header - Updated to match Figma design */
+
+.shi-header {
+    background-color: #f7f7f8;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 24px 64px;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid #e6e9ec;
+}
+
+/* Header grid */
+.header-container {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 24px;
+    padding: 0;
+    width: 100%;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.brand-share-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 28px;
+    color: #092540;
+    white-space: nowrap;
+}
+
+/* Header right - Filters */
+.header-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.filters-container {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    color: #6b7c8c;
+    white-space: nowrap;
+}
+
+.dropdown-container {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #e6e9ec;
+    border-radius: 8px;
+    padding: 4px 12px;
+    cursor: pointer;
+    min-width: 140px;
+    transition: border-color 0.2s ease;
+    height: 40px;
+    display: flex;
+    align-items: center;
+}
+
+/* Back icon button states (from Figma) */
+.back-icon-button {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px; /* fully round per spec */
+    background-color: transparent; /* regular */
+}
+.back-icon-button:hover {
+    background-color: #f3f7ff; /* hover */
+}
+.back-icon-button:active {
+    background-color: #e8eeff; /* active */
+}
+
+.dropdown-container:hover {
+    border-color: #c1c7cd;
+}
+
+.dropdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    height: 100%;
+}
+
+.dropdown-text {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    color: #092540;
+    white-space: nowrap;
+}
+
+.dropdown-icon {
+    width: 12px;
+    height: 12px;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.dropdown-icon.rotated {
+    transform: rotate(180deg);
+}
+
+.dropdown-container:hover .dropdown-icon {
+    transform: translateY(1px);
+}
+
+.dropdown-container:hover .dropdown-icon.rotated {
+    transform: rotate(180deg) translateY(1px);
+}
+
+.dropdown-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e6e9ec;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    margin-top: 4px;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.dropdown-item {
+    padding: 8px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    color: #092540;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.dropdown-item.selected {
+    background-color: #e6f3ff;
+    color: #195afe;
+    font-weight: 500;
+}
+
+.dropdown-item:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+.dropdown-item:last-child {
+    border-radius: 0 0 8px 8px;
+}
+
+/* Dropdown sections */
+.dropdown-section {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.dropdown-section:last-child {
+    border-bottom: none;
+}
+
+.dropdown-section-header {
+    padding: 8px 12px 4px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 12px;
+    color: #6b7c8c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background-color: #f8f9fa;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .header-container {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .filters-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .filter-label {
+        text-align: left;
+    }
+} 

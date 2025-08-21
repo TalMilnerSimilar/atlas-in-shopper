@@ -1,0 +1,10 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="ic_open_in_new_black_12px 2">
+<path id="Shape" fill-rule="evenodd" clip-rule="evenodd" d="M1.2549 1.2549V10.0392H10.0392V5.64706H11.2941V10.0392C11.2941 10.7294 10.7294 11.2941 10.0392 11.2941H1.2549C0.558431 11.2941 0 10.7294 0 10.0392V1.2549C0 0.564706 0.558431 0 1.2549 0H5.64706V1.2549H1.2549ZM6.90196 1.2549V0H11.2941V4.39216H10.0392V2.13961L3.87137 8.30745L2.98667 7.42275L9.15451 1.2549H6.90196Z" fill="var(--fill-0, #B6BEC6)"/>
+<mask id="mask0_453_91288" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="12" height="12">
+<path id="Shape_2" fill-rule="evenodd" clip-rule="evenodd" d="M1.2549 1.2549V10.0392H10.0392V5.64706H11.2941V10.0392C11.2941 10.7294 10.7294 11.2941 10.0392 11.2941H1.2549C0.558431 11.2941 0 10.7294 0 10.0392V1.2549C0 0.564706 0.558431 0 1.2549 0H5.64706V1.2549H1.2549ZM6.90196 1.2549V0H11.2941V4.39216H10.0392V2.13961L3.87137 8.30745L2.98667 7.42275L9.15451 1.2549H6.90196Z" fill="var(--fill-0, white)"/>
+</mask>
+<g mask="url(#mask0_453_91288)">
+</g>
+</g>
+</svg>

@@ -1,0 +1,587 @@
+import React, { useState, useEffect, useMemo } from 'react';
+
+interface RowData {
+  brand: string;
+  totalRevenue: string;
+  unitsSold: string;
+  productViews: string;
+  share: string;
+  change: string;
+  isPositive: boolean;
+  isHighlighted: boolean;
+}
+
+const competitorBrands = ['Adidas','New Balance','Hoka','Asics'];
+
+const rawData: RowData[] = [
+  {
+    brand: 'My Brand',
+    totalRevenue: '7.5K',
+    unitsSold: '25K',
+    productViews: '120K',
+    share: '75.5%',
+    change: '-0.9 PP',
+    isPositive: false,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Adidas',
+    totalRevenue: '2.5K',
+    unitsSold: '8K',
+    productViews: '45K',
+    share: '24.8%',
+    change: '+1.6 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+  {
+    brand: 'New Balance',
+    totalRevenue: '0.8K',
+    unitsSold: '3K',
+    productViews: '18K',
+    share: '8.3%',
+    change: '+0.8 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Hoka',
+    totalRevenue: '0.4K',
+    unitsSold: '1.5K',
+    productViews: '10K',
+    share: '3.5%',
+    change: '-0.2 PP',
+    isPositive: false,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Asics',
+    totalRevenue: '0.1K',
+    unitsSold: '0.3K',
+    productViews: '2K',
+    share: '1.2%',
+    change: '-15.6 PP',
+    isPositive: false,
+    isHighlighted: true,
+  },
+  {
+    brand: 'Brooks',
+    totalRevenue: '0.06K',
+    unitsSold: '0.15K',
+    productViews: '1K',
+    share: '0.6%',
+    change: '+0.8 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Saucony',
+    totalRevenue: '0.05K',
+    unitsSold: '0.12K',
+    productViews: '0.8K',
+    share: '0.5%',
+    change: '+9.5 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Under Armour',
+    totalRevenue: '0.03K',
+    unitsSold: '0.08K',
+    productViews: '0.5K',
+    share: '0.3%',
+    change: '+2.5 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Puma',
+    totalRevenue: '0.02K',
+    unitsSold: '0.06K',
+    productViews: '0.4K',
+    share: '0.2%',
+    change: '+0.3 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Reebok',
+    totalRevenue: '0.04K',
+    unitsSold: '0.1K',
+    productViews: '0.6K',
+    share: '0.4%',
+    change: '-0.1 PP',
+    isPositive: false,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Fila',
+    totalRevenue: '0.03K',
+    unitsSold: '0.09K',
+    productViews: '0.5K',
+    share: '0.35%',
+    change: '+0.05 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Mizuno',
+    totalRevenue: '0.025K',
+    unitsSold: '0.07K',
+    productViews: '0.45K',
+    share: '0.28%',
+    change: '+0.2 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Skechers',
+    totalRevenue: '0.035K',
+    unitsSold: '0.11K',
+    productViews: '0.7K',
+    share: '0.42%',
+    change: '-0.15 PP',
+    isPositive: false,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Converse',
+    totalRevenue: '0.05K',
+    unitsSold: '0.15K',
+    productViews: '0.9K',
+    share: '0.6%',
+    change: '+0.4 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Jordan',
+    totalRevenue: '0.06K',
+    unitsSold: '0.18K',
+    productViews: '1.0K',
+    share: '0.7%',
+    change: '+0.6 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Vans',
+    totalRevenue: '0.045K',
+    unitsSold: '0.13K',
+    productViews: '0.8K',
+    share: '0.55%',
+    change: '+0.1 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+  {
+    brand: 'DC Shoes',
+    totalRevenue: '0.015K',
+    unitsSold: '0.05K',
+    productViews: '0.3K',
+    share: '0.18%',
+    change: '-0.05 PP',
+    isPositive: false,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Columbia',
+    totalRevenue: '0.025K',
+    unitsSold: '0.07K',
+    productViews: '0.4K',
+    share: '0.25%',
+    change: '+0.2 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Salomon',
+    totalRevenue: '0.03K',
+    unitsSold: '0.09K',
+    productViews: '0.5K',
+    share: '0.3%',
+    change: '+0.05 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Merrell',
+    totalRevenue: '0.02K',
+    unitsSold: '0.06K',
+    productViews: '0.35K',
+    share: '0.22%',
+    change: '-0.02 PP',
+    isPositive: false,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Timberland',
+    totalRevenue: '0.055K',
+    unitsSold: '0.16K',
+    productViews: '0.95K',
+    share: '0.65%',
+    change: '+0.12 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+  {
+    brand: 'La Sportiva',
+    totalRevenue: '0.012K',
+    unitsSold: '0.04K',
+    productViews: '0.25K',
+    share: '0.15%',
+    change: '+0.01 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+  {
+    brand: 'The North Face',
+    totalRevenue: '0.05K',
+    unitsSold: '0.14K',
+    productViews: '0.85K',
+    share: '0.58%',
+    change: '+0.3 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+  {
+    brand: 'Anta',
+    totalRevenue: '0.02K',
+    unitsSold: '0.07K',
+    productViews: '0.45K',
+    share: '0.27%',
+    change: '+0.04 PP',
+    isPositive: true,
+    isHighlighted: false,
+  },
+];
+
+const metricKeys = ['productViews', 'unitsSold', 'totalRevenue'] as const;
+const metricLabels = ['Total Product Views', 'Total Units Sold', 'Total Revenue'];
+
+type MetricKey = typeof metricKeys[number];
+
+type SortKey = MetricKey | 'share' | 'brand' | 'change';
+
+const parseNumber = (val: string) => {
+  if (val.includes('K')) return parseFloat(val) * 1000;
+  if (val.includes('%')) return parseFloat(val);
+  return parseFloat(val);
+};
+
+const generateRandomSpark = () => {
+  const numPoints = 6;
+  const points: string[] = [];
+  for (let i = 0; i < numPoints; i++) {
+    const x = i * (100 / (numPoints - 1));
+    const y = 4 + Math.random() * 11; // 4-15
+    points.push(`${x},${y.toFixed(1)}`);
+  }
+  return points.join(' ');
+};
+
+const DataTable: React.FC = () => {
+  /* ------------------- metric & sort state ------------------- */
+  const [metricIdx, setMetricIdx] = useState(0);
+  const [sortKey, setSortKey] = useState<SortKey | null>(null);
+  const [sortAsc, setSortAsc] = useState(true);
+
+  /* ------------------- pagination state ---------------------- */
+  const rowsPerPage = 8;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageInput, setPageInput] = useState('1');
+
+  /* ------------------- derived / memo data ------------------- */
+  const sortedData: RowData[] = useMemo(() => {
+    const myBrand = rawData.find((r) => r.brand === 'My Brand');
+    const others = rawData.filter((r) => r.brand !== 'My Brand');
+
+    const sortedOthers = sortKey
+      ? [...others].sort((a, b) => {
+          if (sortKey === 'brand') {
+            return sortAsc
+              ? a.brand.localeCompare(b.brand)
+              : b.brand.localeCompare(a.brand);
+          }
+          const aVal = parseNumber((a as any)[sortKey]);
+          const bVal = parseNumber((b as any)[sortKey]);
+          return sortAsc ? aVal - bVal : bVal - aVal;
+        })
+      : others;
+
+    return myBrand ? [myBrand, ...sortedOthers] : sortedOthers;
+  }, [sortKey, sortAsc]);
+
+  const totalPages = Math.ceil(sortedData.length / rowsPerPage);
+
+  // ensure currentPage in range
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [totalPages, currentPage]);
+
+  useEffect(() => {
+    setPageInput(currentPage.toString());
+  }, [currentPage]);
+
+  const pagedData = useMemo(() => {
+    const start = (currentPage - 1) * rowsPerPage;
+    return sortedData.slice(start, start + rowsPerPage);
+  }, [sortedData, currentPage]);
+
+  const sparkPointsArr = useMemo(() => sortedData.map(generateRandomSpark), []);
+
+  const clampPage = (p: number) => {
+    if (isNaN(p) || p < 1) return 1;
+    if (p > totalPages) return totalPages;
+    return p;
+  };
+
+  /* ----------------------------- JSX ------------------------- */
+  return (
+    <div className="bg-white border border-gray-200 rounded-md">
+      {/* Table header bar */}
+      <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-medium text-gray-900">Overtime View</h2>
+          <img src="/icons/info-icon.svg" alt="Info" className="w-4 h-4 text-gray-400" />
+        </div>
+      </div>
+
+      {/* Metric tabs */}
+      <div className="flex border-b border-gray-200 select-none">
+        {['Product View', 'Units Sold', 'Revenues'].map((label, idx) => {
+          const isActive = metricIdx === idx;
+          return (
+            <div
+              key={label}
+              onClick={() => setMetricIdx(idx)}
+              className={`flex-1 p-6 flex items-center justify-center gap-2 cursor-pointer border-r border-gray-200 ${
+                isActive ? 'border-b-[3px]' : ''
+              }`}
+              style={isActive ? { borderBottomColor: '#195afe', color: '#195afe' } : undefined}
+            >
+              <span className="text-base">{label}</span>
+              <img src="/icons/info-icon.svg" alt="Info" className="w-4 h-4 text-gray-400" />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-gray-200 text-xs font-medium text-gray-600">
+              <th
+                className="text-left p-4 cursor-pointer text-[#3A5166]"
+                onClick={() => {
+                  setSortKey('brand');
+                  setSortAsc(sortKey === 'brand' ? !sortAsc : true);
+                }}
+              >
+                <div className="flex items-center gap-1">
+                  <span>Brand</span>
+                  {sortKey === 'brand' && (
+                    <img
+                      src={sortAsc ? '/icons/chevron-up.svg' : '/icons/chevron-down.svg'}
+                      className="w-3 h-3 text-[#4D87F7]"
+                      alt="sort"
+                    />
+                  )}
+                </div>
+              </th>
+              <th
+                className="text-left p-4 cursor-pointer text-[#3A5166]"
+                onClick={() => {
+                  const key = metricKeys[metricIdx] as SortKey;
+                  setSortKey(key);
+                  setSortAsc(sortKey === key ? !sortAsc : true);
+                }}
+              >
+                <div className="flex items-center gap-1">
+                  <span>{metricLabels[metricIdx]}</span>
+                  {sortKey === metricKeys[metricIdx] && (
+                    <img
+                      src={sortAsc ? '/icons/chevron-up.svg' : '/icons/chevron-down.svg'}
+                      className="w-3 h-3 text-[#4D87F7]"
+                      alt="sort"
+                    />
+                  )}
+                </div>
+              </th>
+              <th
+                className="text-left p-4 cursor-pointer text-[#3A5166]"
+                onClick={() => {
+                  setSortKey('share');
+                  setSortAsc(sortKey === 'share' ? !sortAsc : true);
+                }}
+              >
+                <div className="flex items-center gap-1">
+                  <span>Share</span>
+                  {sortKey === 'share' && (
+                    <img
+                      src={sortAsc ? '/icons/chevron-up.svg' : '/icons/chevron-down.svg'}
+                      className="w-3 h-3 text-[#4D87F7]"
+                      alt="sort"
+                    />
+                  )}
+                </div>
+              </th>
+              <th
+                className="text-left p-4 cursor-pointer text-[#3A5166]"
+                onClick={() => {
+                  setSortKey('change');
+                  setSortAsc(sortKey === 'change' ? !sortAsc : true);
+                }}
+              >
+                <div className="flex items-center gap-1">
+                  <span>Change</span>
+                  {sortKey === 'change' && (
+                    <img
+                      src={sortAsc ? '/icons/chevron-up.svg' : '/icons/chevron-down.svg'}
+                      className="w-3 h-3 text-[#4D87F7]"
+                      alt="sort"
+                    />
+                  )}
+                </div>
+              </th>
+              <th className="text-left p-4">Share over time</th>
+              <th className="text-left p-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pagedData.map((row, idx) => (
+              <tr key={idx} className="border-b border-gray-200 hover:bg-blue-50">
+                {/* Brand */}
+                <td className="p-4">
+                  <span className={row.brand === 'My Brand' ? 'font-bold text-[#195afe] cursor-pointer' : 'text-sm text-[#195afe] cursor-pointer'}>
+                    {row.brand === 'My Brand' ? 'My Brand - Nike' : row.brand}
+                    {competitorBrands.includes(row.brand) && (
+                      <span className="ml-1 px-1.5 py-0.5 bg-gray-100 text-gray-600 text-[10px] rounded">Comp</span>
+                    )}
+                  </span>
+                </td>
+
+                {/* Metric value */}
+                <td className="p-4 text-sm text-gray-600">{(row as any)[metricKeys[metricIdx]]}</td>
+
+                {/* Share with inline bar */}
+                <td className="p-4">
+                  <div className="flex items-center gap-2 w-40">
+                    <span className="text-sm text-gray-600 min-w-[40px]">{row.share}</span>
+                    <div className="flex-1 h-2 bg-gray-200 rounded">
+                      <div
+                        className="h-full bg-blue-600 rounded"
+                        style={{ width: row.share }}
+                      />
+                    </div>
+                  </div>
+                </td>
+
+                {/* Change */}
+                <td className="p-4">
+                  <div
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[26px] text-[10px] font-bold tracking-[0.3px] leading-[12px] ${
+                      row.isPositive ? 'bg-[#e6faf5] text-[#009688]' : 'bg-[#ffe6e6] text-[#bb3f3f]'
+                    }`}
+                  >
+                    {row.change}
+                  </div>
+                </td>
+
+                {/* Sparkline */}
+                <td className="p-4">
+                  <svg width="100" height="20" viewBox="0 0 100 20" className="text-blue-600">
+                    <polyline
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      points={sparkPointsArr[sortedData.indexOf(row)]}
+                    />
+                  </svg>
+                </td>
+
+                {/* Actions */}
+                <td className="p-4">
+                  <div className="flex gap-2">
+                    <button className="px-4 py-2 text-xs border border-gray-200 rounded-full text-gray-400">
+                      Compare
+                    </button>
+                    <button className="px-4 py-2 text-xs border border-gray-200 rounded-full text-blue-600">
+                      Analyze
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex items-center justify-end gap-4 p-4 border-t border-gray-200 select-none">
+        {/* First / Prev */}
+        <div className="flex items-center gap-2">
+          <button
+            className="w-6 h-6 flex items-center justify-center disabled:opacity-30"
+            onClick={() => setCurrentPage(1)}
+            disabled={currentPage === 1}
+          >
+            <div className="flex -space-x-1">
+            <img src="/icons/chevron-left.svg" alt="First" className="w-4 h-4" />
+            <img src="/icons/chevron-left.svg" alt="First" className="w-4 h-4 -ml-1" />
+          </div>
+          </button>
+          <button
+            className="w-6 h-6 flex items-center justify-center disabled:opacity-30"
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+          >
+            <img src="/icons/chevron-left.svg" alt="Prev" className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Page input */}
+        <div className="flex items-center gap-2 text-xs text-gray-600">
+          <input
+            type="text"
+            value={pageInput}
+            onChange={(e) => setPageInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                setCurrentPage(clampPage(parseInt(pageInput, 10)));
+              }
+            }}
+            className="px-1.5 py-0.5 border border-gray-200 rounded text-center"
+            style={{ width: '30px' }}
+          />
+          <span>out of</span>
+          <span>{totalPages}</span>
+        </div>
+
+        {/* Next / Last */}
+        <div className="flex items-center gap-2">
+          <button
+            className="w-6 h-6 flex items-center justify-center disabled:opacity-30"
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+          >
+            <img src="/icons/chevron-right.svg" alt="Next" className="w-4 h-4" />
+          </button>
+          <button
+            className="w-6 h-6 flex items-center justify-center disabled:opacity-30"
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={currentPage === totalPages}
+          >
+            <div className="flex -space-x-1">
+            <img src="/icons/chevron-right.svg" alt="Last" className="w-4 h-4" />
+            <img src="/icons/chevron-right.svg" alt="Last" className="w-4 h-4 -ml-1" />
+          </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DataTable;

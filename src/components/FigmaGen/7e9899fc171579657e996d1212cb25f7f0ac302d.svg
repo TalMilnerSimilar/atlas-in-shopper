@@ -1,0 +1,7 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon/Flag/france">
+<circle id="Oval" cx="8" cy="8" r="8" fill="var(--fill-0, #F0F0F0)"/>
+<path id="Shape" d="M16 8C16 4.56028 13.829 1.62794 10.7826 0.497594V15.5024C13.829 14.3721 16 11.4397 16 8Z" fill="var(--fill-0, #D80027)"/>
+<path id="Shape_2" d="M0 8C0 11.4397 2.17103 14.3721 5.21741 15.5024V0.497594C2.17103 1.62794 0 4.56028 0 8Z" fill="var(--fill-0, #0052B4)"/>
+</g>
+</svg>

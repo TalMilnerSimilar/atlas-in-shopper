@@ -1,0 +1,360 @@
+/* Hero Tile - Spotlight Container */
+
+.spotlight-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Brand Header Card */
+.brand-header-card {
+  height: 132px;
+  border-radius: 6px 6px 0 0;
+  border: 1px solid #e6e9ec;
+  /* Gradient overlay on top of base background */
+  background: linear-gradient(250deg, rgba(165, 31, 227, 0.15) 9.5%, rgba(25, 90, 254, 0.15) 26%, rgba(255, 255, 255, 0.15) 52%), #ffffff;
+  overflow: hidden;
+}
+
+.brand-header-content {
+  display: flex;
+  flex-direction: row;
+  height: 132px;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24px 24px 0 24px;
+  overflow: hidden;
+}
+
+.brand-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.brand-title {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  align-items: center;
+  justify-content: flex-start;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 20px;
+  line-height: 28px;
+  color: #092540;
+  white-space: nowrap;
+}
+
+.brand-name-bold {
+  font-weight: 700;
+}
+
+.brand-name-regular {
+  font-weight: 400;
+}
+
+.domain-info {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  height: 32px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.flag-container {
+  height: 20px;
+  position: relative;
+  width: 106px;
+}
+
+.flag-icon {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 16px;
+  height: 16px;
+}
+
+.domain-text {
+  position: absolute;
+  left: 24px;
+  top: 0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #092540;
+  white-space: nowrap;
+}
+
+.report-info {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  align-items: center;
+  justify-content: flex-start;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  line-height: 16px;
+  color: #3a5166;
+  white-space: nowrap;
+}
+
+.report-label {
+  font-weight: 700;
+}
+
+.report-date {
+  font-weight: 400;
+}
+
+/* Leading Products */
+.leading-products {
+  height: 108px;
+  overflow: hidden;
+  position: relative;
+  width: 252px;
+}
+
+.products-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.product-card {
+  position: absolute;
+  background-color: #ffffff;
+  border: 1px solid #e6e9ec;
+  border-radius: 4.5px;
+  overflow: hidden;
+}
+
+.product-small {
+  width: 65px;
+  height: 66px;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.product-medium {
+  width: 114px;
+  height: 114px;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.product-1 {
+  right: 188px;
+  top: 48px;
+  left: auto;
+}
+
+.product-2 {
+  left: 164px;
+  top: 24px;
+  width: 90px;
+  height: 90px;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.product-3 {
+  left: 58px;
+  top: 0;
+}
+
+.product-content {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+  padding: 8px;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Specific tweaks for small product card */
+.product-small .product-content {
+  padding: 0;
+  width: 48px;
+  height: 48px;
+}
+
+/* Overrides for second product card */
+.product-2 .product-content {
+  padding: 0;
+  width: 72px;
+  height: 72px;
+}
+
+/* ensure image container stays correct sizes */
+.product-2.product-small .product-image-container,
+.product-small.product-2 .product-image-container {
+  width: 72px;
+  height: 72px;
+}
+
+/* Overrides for third product card (medium) */
+.product-3.product-medium .product-content,
+.product-medium.product-3 .product-content {
+  padding: 0;
+  width: 96px;
+  height: 96px;
+}
+.product-3.product-medium .product-image-container,
+.product-medium.product-3 .product-image-container {
+  width: 96px;
+  height: 96px;
+}
+
+.product-image-container {
+  background-color: #ffffff;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.product-small .product-image-container {
+  width: 48px;
+  height: 48px;
+}
+
+.product-medium .product-image-container {
+  width: 72px;
+  height: 72px;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Competitors Section */
+.competitors-section {
+  background-color: #ffffff;
+  border-radius: 0 0 8px 8px;
+  border: 1px solid #e6e9ec;
+  border-top: none;
+  overflow: hidden;
+}
+
+.competitors-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 24px;
+  width: 100%;
+}
+
+.competitors-info {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.competitors-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  color: #3a5166;
+  white-space: nowrap;
+}
+
+.competitors-tags {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.competitor-tag {
+  background-color: #f7f7f8;
+  border: 1px solid #e6e9ec;
+  border-radius: 8px;
+  height: 20px;
+  max-width: 160px;
+  min-width: fit-content;
+  overflow: hidden;
+}
+
+.tag-content {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2px 8px;
+  width: 100%;
+  height: 100%;
+}
+
+.tag-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.brand-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.competitor-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #092540;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.edit-button-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.edit-button {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 18px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: #195afe;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+}
+
+.edit-button:hover {
+  background-color: rgba(25, 90, 254, 0.05);
+}
+
+.edit-button:active {
+  background-color: rgba(25, 90, 254, 0.1);
+} 

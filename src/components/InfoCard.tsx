@@ -1,0 +1,56 @@
+import React from 'react';
+
+const InfoCard: React.FC = () => {
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg px-8 py-[18px] mb-8" style={{
+      background: 'linear-gradient(250deg, rgba(165, 31, 227, 0.15) 9.5%, rgba(25, 90, 254, 0.15) 26%, rgba(255, 255, 255, 0.15) 52%), #ffffff'
+    }}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-8">
+          <div className="flex items-center justify-center">
+            <svg width="97" height="99" viewBox="0 0 97 99" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g filter="url(#filter0_d_376_20980)">
+                <path d="M81.0432 70.6001L48.5671 86.4998V48.0668L84.3882 30.1562V65.238C84.3882 67.5174 83.0904 69.5978 81.0432 70.6001Z" fill="url(#paint0_linear_376_20980)"/>
+                <path d="M48.5672 86.5V48.067L12.7461 29.4102V65.7038C12.7461 67.6982 13.8817 69.5186 15.673 70.3956L48.5672 86.5Z" fill="url(#paint1_linear_376_20980)"/>
+                <path d="M84.3884 30.5299L48.5674 48.0674L12 29.0374L43.9484 13.5573C46.6289 12.2585 49.7553 12.2619 52.4319 13.5686C63.5414 18.9924 80.2031 27.1313 81.7765 27.918C83.5675 28.8135 84.2641 30.0324 84.3884 30.5299Z" fill="white"/>
+                <path d="M25.4327 36.6031V47.2333C25.4327 47.5159 25.5924 47.7743 25.8453 47.9007L33.308 51.6321C33.8042 51.8802 34.388 51.5194 34.388 50.9646V41.0618C34.388 40.7814 34.5452 40.5246 34.795 40.3971L70.2091 22.3212L63.1195 18.5898L25.8642 35.9265C25.601 36.0489 25.4327 36.3129 25.4327 36.6031Z" fill="#E0EDFF"/>
+                <path d="M25.4327 37.3335V47.232C25.4327 47.5146 25.5924 47.7731 25.8453 47.8995L33.308 51.6308C33.8042 51.8789 34.388 51.5181 34.388 50.9633V41.0648C34.388 40.7822 34.2283 40.5238 33.9755 40.3973L26.5128 36.666C26.0166 36.4179 25.4327 36.7787 25.4327 37.3335Z" fill="#CBE1FF"/>
+              </g>
+              <defs>
+                <filter id="filter0_d_376_20980" x="0" y="-0.5" width="96.3884" height="99" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+                  <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+                  <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                  <feOffset/>
+                  <feGaussianBlur stdDeviation="6"/>
+                  <feComposite in2="hardAlpha" operator="out"/>
+                  <feColorMatrix type="matrix" values="0 0 0 0 0.719201 0 0 0 0 0.8128 0 0 0 0 1 0 0 0 0.5 0"/>
+                  <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_376_20980"/>
+                  <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_376_20980" result="shape"/>
+                </filter>
+                <linearGradient id="paint0_linear_376_20980" x1="84.3882" y1="68.5893" x2="48.5671" y2="47.6936" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#ECF3FD"/>
+                  <stop offset="1" stopColor="#EFF3FE"/>
+                </linearGradient>
+                <linearGradient id="paint1_linear_376_20980" x1="12.7461" y1="69.3357" x2="48.5672" y2="47.6938" gradientUnits="userSpaceOnUse">
+                  <stop stopColor="#EBF2FF"/>
+                  <stop offset="1" stopColor="#F7F9FE"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">Cross Retail Analysis</h2>
+            <p className="text-sm text-gray-600">
+              Compare your brand's performance across different retailers and identify opportunities for growth.
+            </p>
+          </div>
+        </div>
+        <button className="bg-blue-600 text-white px-4 py-2 rounded-full flex items-center gap-2 hover:bg-blue-700">
+          <span>Learn More</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default InfoCard;
