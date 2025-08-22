@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
 
 interface MarketPositionChartProps {
@@ -28,6 +28,26 @@ const MarketPositionChart: React.FC<MarketPositionChartProps> = ({
   getBrandHeadline,
 }) => {
   const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [insightEnabled, setInsightEnabled] = useState(true);
+
+  useEffect(() => {
+    // Load initial state
+    const saved = localStorage.getItem('marketPositionInsightEnabled');
+    if (saved !== null) {
+      setInsightEnabled(JSON.parse(saved));
+    }
+
+    // Listen for toggle events
+    const handleInsightToggle = (event: CustomEvent) => {
+      setInsightEnabled(event.detail.enabled);
+    };
+
+    window.addEventListener('marketPositionInsightToggle', handleInsightToggle as EventListener);
+    
+    return () => {
+      window.removeEventListener('marketPositionInsightToggle', handleInsightToggle as EventListener);
+    };
+  }, []);
   return (
     <div className="bg-white border border-gray-200 rounded-lg mb-8">
       <div className="px-6 pt-4 pb-4 border-b border-[#E6E9EC]">
@@ -135,24 +155,26 @@ const MarketPositionChart: React.FC<MarketPositionChartProps> = ({
           </div>
         </div>
         
-        {/* Summary card */}
-        <div className="bg-[#f5f8ff] rounded-lg p-4 w-full">
-          <div className="flex flex-col items-start justify-start w-full">
-            <h4 className="text-[20px] leading-7 font-bold text-[#092540] text-center w-full" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-              {getBrandHeadline(currentBrandData.status, brandSel)}
-            </h4>
+        {/* Summary card - conditionally rendered */}
+        {insightEnabled && (
+          <div className="bg-[#f5f8ff] rounded-lg p-4 w-full">
+            <div className="flex flex-col items-start justify-start w-full">
+              <h4 className="text-[20px] leading-7 font-bold text-[#092540] text-center w-full" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                {getBrandHeadline(currentBrandData.status, brandSel)}
+              </h4>
+            </div>
+            <div className="h-px w-full my-2">
+              <img src="/assets/dc289e6a6ffaf06d2e064fa9fe8267366e41a94d.svg" alt="" className="w-full h-px" />
+            </div>
+            <div className="relative">
+              <p className="text-[14px] leading-5 text-[#092540] text-center flex items-center justify-center gap-2 flex-wrap" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                <span>You're in the <span className="font-bold">{getOrdinal(currentBrandData.percentile)}</span> percentile (rank {currentBrandData.rank} of {currentBrandData.total}).</span>
+                <span className="bg-[#e6faf5] text-[#009688] text-[9px] font-bold px-1.5 py-0.5 rounded-full tracking-wide">+3PP PoP</span>
+                <span className="bg-[#ffe6e6] text-[#bb3f3f] text-[9px] font-bold px-1.5 py-0.5 rounded-full tracking-wide">-2PP YoY</span>
+              </p>
+            </div>
           </div>
-          <div className="h-px w-full my-2">
-            <img src="/assets/dc289e6a6ffaf06d2e064fa9fe8267366e41a94d.svg" alt="" className="w-full h-px" />
-          </div>
-          <div className="relative">
-            <p className="text-[14px] leading-5 text-[#092540] text-center flex items-center justify-center gap-2 flex-wrap" style={{ fontFamily: 'DM Sans, sans-serif' }}>
-              <span>You're in the <span className="font-bold">{getOrdinal(currentBrandData.percentile)}</span> percentile (rank {currentBrandData.rank} of {currentBrandData.total}).</span>
-              <span className="bg-[#e6faf5] text-[#009688] text-[9px] font-bold px-1.5 py-0.5 rounded-full tracking-wide">+3PP PoP</span>
-              <span className="bg-[#ffe6e6] text-[#bb3f3f] text-[9px] font-bold px-1.5 py-0.5 rounded-full tracking-wide">-2PP YoY</span>
-            </p>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

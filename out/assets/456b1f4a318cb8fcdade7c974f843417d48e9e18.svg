@@ -1,0 +1,12 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 121 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Spark">
+<path id="Fill" d="M12.0848 11.8889L2.36814 14.8632V57.6154H119.316V19.2735L98.3164 14.8632L82.5955 2.64103H64.4053L47.8164 1L30.8164 2.64103L21.054 12.8803L12.0848 11.8889Z" fill="url(#paint0_linear_453_92648)"/>
+<path id="Line" d="M1 16.5897L11.6567 11.6667L20.5373 13.3077L30.5 3.46154L47.1791 1L66 3.46154H81.5L96.5 13.3077L119.816 20.5" stroke="var(--stroke-0, #3E74FE)" stroke-width="2"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_453_92648" x1="2.36814" y1="3.46163" x2="2.36814" y2="51.0514" gradientUnits="userSpaceOnUse">
+<stop stop-color="#4F8DF9" stop-opacity="0.16"/>
+<stop offset="1" stop-color="#4F8DF9" stop-opacity="0.02"/>
+</linearGradient>
+</defs>
+</svg>

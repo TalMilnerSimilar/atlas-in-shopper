@@ -1,0 +1,7 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon/Flag/germany">
+<path id="Shape" d="M0.684191 14.8261C2.23841 19.0148 6.27039 22 11 22C15.7296 22 19.7616 19.0148 21.3158 14.8261L11 13.8696L0.684191 14.8261Z" fill="var(--fill-0, #FFDA44)"/>
+<path id="Shape_2" d="M11 0C6.27039 0 2.23841 2.98513 0.684191 7.17393L11 8.13042L21.3158 7.17389C19.7616 2.98513 15.7296 0 11 0Z" fill="var(--fill-0, black)"/>
+<path id="Shape_3" d="M0.684191 7.17393C0.242043 8.36559 0 9.65448 0 11C0 12.3455 0.242043 13.6344 0.684191 14.8261H21.3159C21.758 13.6344 22 12.3455 22 11C22 9.65448 21.758 8.36559 21.3158 7.17393H0.684191Z" fill="var(--fill-0, #D80027)"/>
+</g>
+</svg>

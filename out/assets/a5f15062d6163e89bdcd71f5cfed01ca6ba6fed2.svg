@@ -1,0 +1,3 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path id="Checkbox" fill-rule="evenodd" clip-rule="evenodd" d="M2 0C0.895431 0 0 0.895431 0 2V10C0 11.1046 0.895431 12 2 12H10C11.1046 12 12 11.1046 12 10V2C12 0.895431 11.1046 0 10 0H2ZM1.33333 5.61333L4.66667 8.94667L10.6667 2.94667L9.72667 2L4.66667 7.06L2.27333 4.67333L1.33333 5.61333Z" fill="var(--fill-0, #FF7A1A)"/>
+</svg>

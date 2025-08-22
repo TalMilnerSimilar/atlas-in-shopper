@@ -111,9 +111,11 @@ function labelsFor(label: string): { include: string; exclude: string } {
 interface NoAggregationTabProps {
   retailers: RetailerNode[];
   selectedBrandName?: string;
+  showKPIs?: boolean;
+  showFilters?: boolean;
 }
 
-export default function NoAggregationTab({ retailers, selectedBrandName }: NoAggregationTabProps) {
+export default function NoAggregationTab({ retailers, selectedBrandName, showKPIs = true, showFilters = true }: NoAggregationTabProps) {
   const [openChip, setOpenChip] = useState<string | null>(null);
   const [staging, setStaging] = useState<{ include: string; exclude: string }>({ include: '', exclude: '' });
   const [chipState, setChipState] = useState<Record<string, { include: string; exclude: string }>>({});
@@ -322,7 +324,8 @@ export default function NoAggregationTab({ retailers, selectedBrandName }: NoAgg
   return (
     <div className="w-full">
       {/* KPI Row */}
-      <div className="relative p-4 gap-2.5 flex border-b border-[#E6E9EC]">
+      {showKPIs && (
+        <div className="relative p-4 gap-2.5 flex border-b border-[#E6E9EC]">
         <div className="flex-1 bg-[#F5F8FF] p-4 rounded relative flex flex-col items-center justify-center group">
           <div className="absolute inset-0 rounded border border-[#E6E9EC] pointer-events-none" />
           <div className="flex items-center gap-1">
@@ -367,19 +370,21 @@ export default function NoAggregationTab({ retailers, selectedBrandName }: NoAgg
             Percentage of total SKUs that belong to {targetBrand}
           </div>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Filters Row */}
-      <div className="px-6 py-4 flex items-center gap-2 border-b border-[#E6E9EC]">
-        <div className="text-[14px] leading-[20px] text-[#3A5166]" style={{ fontFamily: 'DM Sans, sans-serif' }}>Filter By:</div>
-        <div className="flex items-center gap-2 h-8">
-          {['Product Name','Brand','Retailer','Price Range','Views'].map(lbl => {
-            const isOpen = openChip === lbl;
-            const filled = !!(chipState[lbl]?.include || chipState[lbl]?.exclude);
-            const filterCount = (chipState[lbl]?.include?.split(',').filter(Boolean).length || 0) + (chipState[lbl]?.exclude?.split(',').filter(Boolean).length || 0);
-            
-            return (
-              <div key={lbl} className="relative">
+      {showFilters && (
+        <div className="px-6 py-4 flex items-center gap-2 border-b border-[#E6E9EC]">
+          <div className="text-[14px] leading-[20px] text-[#3A5166]" style={{ fontFamily: 'DM Sans, sans-serif' }}>Filter By:</div>
+          <div className="flex items-center gap-2 h-8">
+            {['Product Name','Brand','Retailer','Price Range','Views'].map(lbl => {
+              const isOpen = openChip === lbl;
+              const filled = !!(chipState[lbl]?.include || chipState[lbl]?.exclude);
+              const filterCount = (chipState[lbl]?.include?.split(',').filter(Boolean).length || 0) + (chipState[lbl]?.exclude?.split(',').filter(Boolean).length || 0);
+              
+              return (
+                <div key={lbl} className="relative">
                 <div
                   className={`rounded-[40px] pl-3 pr-1 py-1 flex items-center gap-2 text-[12px] leading-[16px] ${
                     isOpen || filled ? 'bg-[#3A5166] text-white' : 'bg-[#F7F7F8] hover:bg-[#E6E9EC] text-[#092540]'
@@ -476,8 +481,9 @@ export default function NoAggregationTab({ retailers, selectedBrandName }: NoAgg
               </div>
             );
           })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Table */}
       <div className="w-full">

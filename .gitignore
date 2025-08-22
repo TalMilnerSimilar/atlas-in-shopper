@@ -96,3 +96,6 @@ jspm_packages/
 
 # Embedded git repositories
 external/brand-share-report/
+
+# Local Netlify folder
+.netlify

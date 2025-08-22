@@ -30,7 +30,7 @@ const formatSkus = (skus: number): string => {
   return `${skus}`;
 };
 
-const CompetitiveLandscapeTab: React.FC<{ selectedBrandName: string }> = ({ selectedBrandName }) => {
+const CompetitiveLandscapeTab: React.FC<{ selectedBrandName: string; showInsights?: boolean; fixedHeight?: boolean; uniformBubbles?: boolean }> = ({ selectedBrandName, showInsights = true, fixedHeight = false, uniformBubbles = false }) => {
   const [nodes, setNodes] = useState<RetailerNode[]>([]);
   const [selectedLegendHosts, setSelectedLegendHosts] = useState<string[]>([]);
   const [legendBrands, setLegendBrands] = useState<{ name: string; skus: number }[]>([]);
@@ -146,9 +146,9 @@ const CompetitiveLandscapeTab: React.FC<{ selectedBrandName: string }> = ({ sele
   const isItemDisabled = (name: string) => !selectedLegendHosts.includes(name) && selectedLegendHosts.length >= maxSelections;
 
   return (
-    <>
-      {/* Chart Content Area */}
-      <div className="flex flex-row gap-10 h-[400px] items-start justify-start p-4 w-full">
+          <>
+        {/* Chart Content Area */}
+        <div className={`flex flex-row gap-10 items-start justify-start p-4 w-full ${fixedHeight ? 'flex-1 overflow-hidden' : 'h-[400px]'}`}>
         <div className="grow h-full min-h-px min-w-px relative">
           <RetailerOpportunityMatrix
             data={filteredNodes}
@@ -160,6 +160,7 @@ const CompetitiveLandscapeTab: React.FC<{ selectedBrandName: string }> = ({ sele
               bottomLeft: 'Low overlap',
               bottomRight: 'Your stronghold'
             }}
+            uniformBubbles={uniformBubbles}
             xAxisLabel="Overlap demand (total views)"
             yAxisLabel="Head-to-head lead vs you (pp)"
             xValueLabel="Overlap demand"
@@ -186,7 +187,7 @@ const CompetitiveLandscapeTab: React.FC<{ selectedBrandName: string }> = ({ sele
       </div>
 
       {/* Insights Section - Full Width */}
-      {dynamicInsight && (
+      {showInsights && dynamicInsight && (
         <div className="mt-10">
           <InsightSection dynamicInsight={dynamicInsight} />
         </div>

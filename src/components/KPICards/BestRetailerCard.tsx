@@ -2,23 +2,24 @@ import React from 'react';
 
 interface BestRetailerCardProps {
   onNavigateToTab?: (tab: string) => void;
+  fixedHeight?: boolean;
 }
 
-const BestRetailerCard: React.FC<BestRetailerCardProps> = ({ onNavigateToTab }) => {
+const BestRetailerCard: React.FC<BestRetailerCardProps> = ({ onNavigateToTab, fixedHeight }) => {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg">
+    <div className={`bg-white border border-gray-200 rounded-lg ${fixedHeight ? 'h-[259px] flex flex-col' : ''}`}>
       <div className="flex flex-col gap-1 px-6 pt-4 pb-4">
         <h3 className="text-base font-medium text-gray-900 leading-5">My Best retailer</h3>
         <span className="text-sm text-gray-500 leading-4">Top retailer performance metrics</span>
       </div>
-      <div className="border-t border-gray-200 pt-4 px-6 pb-4">
+      <div className={`border-t border-gray-200 pt-4 px-6 pb-4 ${fixedHeight ? 'flex-1 flex flex-col' : ''}`}>
         <div className="flex items-center gap-2 mb-4">
           <span className="text-sm font-bold text-gray-900">eBay.com</span>
           <div className="w-4 h-4">
             <img src="/assets/4c906a76851dd45819a9104dd0fc0f361509528d.svg" alt="Info icon" className="w-full h-full" />
           </div>
         </div>
-        <div className="space-y-3 mb-8">
+        <div className={`space-y-3 ${fixedHeight ? 'flex-1 flex flex-col justify-center' : 'mb-8'}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="bg-blue-100 text-blue-600 text-xs font-medium px-0 py-0 rounded w-4 h-4 flex items-center justify-center">1</div>
@@ -50,14 +51,16 @@ const BestRetailerCard: React.FC<BestRetailerCardProps> = ({ onNavigateToTab }) 
             </div>
           </div>
         </div>
-        <div className="border-t border-gray-200 pt-4 mt-4 text-center">
-          <button 
-            className="text-blue-600 text-sm hover:text-blue-700"
-            onClick={() => onNavigateToTab?.('opportunity-matrix')}
-          >
-            Search for additional retailers to consider
-          </button>
-        </div>
+        {onNavigateToTab && (
+          <div className="border-t border-gray-200 pt-4 mt-4 text-center">
+            <button 
+              className="text-blue-600 text-sm hover:text-blue-700"
+              onClick={() => onNavigateToTab('opportunity-matrix')}
+            >
+              Search for additional retailers to consider
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

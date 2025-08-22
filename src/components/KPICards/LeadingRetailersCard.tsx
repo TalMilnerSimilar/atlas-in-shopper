@@ -2,17 +2,18 @@ import React from 'react';
 
 interface LeadingRetailersCardProps {
   onNavigateToTab?: (tab: string) => void;
+  fixedHeight?: boolean;
 }
 
-const LeadingRetailersCard: React.FC<LeadingRetailersCardProps> = ({ onNavigateToTab }) => {
+const LeadingRetailersCard: React.FC<LeadingRetailersCardProps> = ({ onNavigateToTab, fixedHeight }) => {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg">
+    <div className={`bg-white border border-gray-200 rounded-lg ${fixedHeight ? 'h-[259px] flex flex-col' : ''}`}>
       <div className="flex flex-col gap-1 px-6 pt-4 pb-4">
         <h3 className="text-base font-medium text-gray-900 leading-5">Leading Retailers in category by Views</h3>
         <span className="text-sm text-gray-500 leading-4">Category views split by retailer</span>
       </div>
-      <div className="border-t border-gray-200 pt-4 px-6 pb-4">
-        <div className="flex items-center gap-4 mb-4" style={{ height: '136px' }}>
+      <div className={`border-t border-gray-200 pt-4 px-6 pb-4 ${fixedHeight ? 'flex-1 flex flex-col' : ''}`}>
+        <div className={`flex items-center gap-4 mb-4 ${fixedHeight ? 'flex-1' : ''}`} style={{ height: fixedHeight ? 'auto' : '136px' }}>
           <div className="w-[105px] h-[105px]">
             <img src="/assets/a644a1d71ad8cc9cf565e595fd6501551f1f4ef9.svg" alt="Retailer chart" className="w-full h-full" />
           </div>
@@ -84,14 +85,16 @@ const LeadingRetailersCard: React.FC<LeadingRetailersCardProps> = ({ onNavigateT
             </div>
           </div>
         </div>
-        <div className="border-t border-gray-200 pt-4 text-center">
-          <button 
-            className="text-blue-600 text-sm hover:text-blue-700"
-            onClick={() => onNavigateToTab?.('retailer-growth')}
-          >
-            Analyze the retailers' change over time
-          </button>
-        </div>
+        {onNavigateToTab && (
+          <div className="border-t border-gray-200 pt-4 text-center">
+            <button 
+              className="text-blue-600 text-sm hover:text-blue-700"
+              onClick={() => onNavigateToTab('retailer-growth')}
+            >
+              Analyze the retailers' change over time
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

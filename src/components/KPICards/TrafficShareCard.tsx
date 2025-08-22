@@ -3,9 +3,10 @@ import { Sparklines, SparklinesLine } from 'react-sparklines';
 
 interface TrafficShareCardProps {
   onNavigateToTab?: (tab: string) => void;
+  fixedHeight?: boolean;
 }
 
-const TrafficShareCard: React.FC<TrafficShareCardProps> = ({ onNavigateToTab }) => {
+const TrafficShareCard: React.FC<TrafficShareCardProps> = ({ onNavigateToTab, fixedHeight }) => {
   const sparklineContainerRef = useRef<HTMLDivElement | null>(null);
   const [sparklineWidth, setSparklineWidth] = useState<number>(0);
 
@@ -31,13 +32,13 @@ const TrafficShareCard: React.FC<TrafficShareCardProps> = ({ onNavigateToTab }) 
   }, []);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg">
+    <div className={`bg-white border border-gray-200 rounded-lg ${fixedHeight ? 'h-[259px] flex flex-col' : ''}`}>
       <div className="flex flex-col gap-1 px-6 pt-4 pb-4">
         <h3 className="text-base font-medium text-gray-900 leading-5">My Brand Traffic Share</h3>
         <span className="text-sm text-gray-500 leading-4">Brand views trend</span>
       </div>
-      <div className="border-t border-gray-200 pt-4 px-6 pb-4">
-        <div className="flex flex-col gap-2">
+      <div className={`border-t border-gray-200 pt-4 px-6 pb-4 ${fixedHeight ? 'flex-1 flex flex-col' : ''}`}>
+        <div className={`flex flex-col gap-2 ${fixedHeight ? 'flex-1' : ''}`}>
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <span className="text-xl font-medium text-gray-900 tracking-wide">24.3K</span>
@@ -53,14 +54,16 @@ const TrafficShareCard: React.FC<TrafficShareCardProps> = ({ onNavigateToTab }) 
             )}
           </div>
         </div>
-        <div className="border-t border-gray-200 pt-4 mt-4 text-center">
-          <button 
-            className="text-blue-600 text-sm hover:text-blue-700"
-            onClick={() => onNavigateToTab?.('brand-performance')}
-          >
-            View detailed traffic analysis
-          </button>
-        </div>
+        {onNavigateToTab && (
+          <div className="border-t border-gray-200 pt-4 mt-4 text-center">
+            <button 
+              className="text-blue-600 text-sm hover:text-blue-700"
+              onClick={() => onNavigateToTab('brand-performance')}
+            >
+              View detailed traffic analysis
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -24,6 +24,7 @@ export default function RetailerOpportunityMatrix({
   xAxisTooltip,
   yAxisTooltip,
   bubbleSizeRange,
+  uniformBubbles = false,
 }: {
   data: RetailerNode[];
   mode?: CompareMode;
@@ -39,6 +40,7 @@ export default function RetailerOpportunityMatrix({
   xAxisTooltip?: string;
   yAxisTooltip?: string;
   bubbleSizeRange?: [number, number];
+  uniformBubbles?: boolean;
 }) {
   const { scored } = useMemo(() => scoreRetailers(data, config), [data, config]);
 
@@ -48,7 +50,7 @@ export default function RetailerOpportunityMatrix({
   const zMax = Math.max(...zValues) || 1;
   
   // Bubble sizes (px area range) - can be provided by the tab
-  const [bubbleMin, bubbleMax] = bubbleSizeRange ?? [300, 3000];
+  const [bubbleMin, bubbleMax] = uniformBubbles ? [800, 800] : (bubbleSizeRange ?? [300, 3000]);
   // Dynamic X-axis: compute min and max from actual data
   const xValues = scored.map(d => d.demand_weekly || 0).filter(v => v > 0);
   const xMinRaw = Math.min(...xValues) || 0;
@@ -217,7 +219,7 @@ export default function RetailerOpportunityMatrix({
 
                   {/* Legends two-column (grid to keep rows aligned when labels wrap) */}
                   <div className="mt-1 grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 items-start">
-                    <div className="text-[#3a5166] leading-4">Brand Total Views (Bubble size)</div>
+                    <div className="text-[#3a5166] leading-4">Brand Total Views{uniformBubbles ? '' : ' (Bubble size)'}</div>
                     <div className="text-[#092540] font-bold text-right leading-4">{abbr(p.brand_views_weekly)}</div>
 
                     <div className="text-[#3a5166] leading-4">{xValueLabel || 'Overlap demand'}</div>

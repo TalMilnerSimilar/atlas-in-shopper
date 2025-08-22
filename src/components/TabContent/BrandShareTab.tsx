@@ -22,6 +22,8 @@ interface BrandShareTabProps {
     sentence: string;
     chips: Array<{ text: string; tone: 'pos' | 'neg' | 'neu' }>;
   };
+  showInsights?: boolean;
+  fixedHeight?: boolean;
 }
 
 const BrandShareTab: React.FC<BrandShareTabProps> = ({
@@ -39,6 +41,8 @@ const BrandShareTab: React.FC<BrandShareTabProps> = ({
   setHoveredDateIdx,
   setChartHoverPos,
   dynamicInsight,
+  showInsights = true,
+  fixedHeight = false,
 }) => {
   // Build share data from retailer_series.csv via getSeriesForRetailer
   const getMarketShareData = (): Array<{ host: string; values: number[] }> => {
@@ -104,9 +108,9 @@ const BrandShareTab: React.FC<BrandShareTabProps> = ({
   const reversedSteps = [...yAxisSteps].reverse();
 
   return (
-    <>
-      {/* Chart Content Area */}
-      <div className="flex flex-row gap-10 h-[400px] items-start justify-start p-4 w-full">
+          <>
+        {/* Chart Content Area */}
+        <div className={`flex flex-row gap-10 items-start justify-start p-4 w-full ${fixedHeight ? 'flex-1 overflow-hidden' : 'h-[400px]'}`}>
         {/* Stacked Area Chart */}
         <div className="grow h-full min-h-px min-w-px relative">
           {/* Y-Axis and Chart Area */}
@@ -248,7 +252,7 @@ const BrandShareTab: React.FC<BrandShareTabProps> = ({
       </div>
 
       {/* Insights Section */}
-      <InsightSection dynamicInsight={dynamicInsight} />
+      {showInsights && <InsightSection dynamicInsight={dynamicInsight} />}
     </>
   );
 };

@@ -14,6 +14,9 @@ interface OpportunityMatrixTabProps {
   formatSkus: (value: number) => string;
   isLegendItemDisabled: (host: string) => boolean;
   seriesColorByRetailer: Record<string, string>;
+  showInsights?: boolean;
+  fixedHeight?: boolean;
+  uniformBubbles?: boolean;
 }
 
 const OpportunityMatrixTab: React.FC<OpportunityMatrixTabProps> = ({
@@ -26,6 +29,9 @@ const OpportunityMatrixTab: React.FC<OpportunityMatrixTabProps> = ({
   formatSkus,
   isLegendItemDisabled,
   seriesColorByRetailer,
+  showInsights = true,
+  fixedHeight = false,
+  uniformBubbles = false,
 }) => {
   const [nodes, setNodes] = useState<RetailerNode[]>([]);
   const [loading, setLoading] = useState(false);
@@ -117,9 +123,9 @@ const OpportunityMatrixTab: React.FC<OpportunityMatrixTabProps> = ({
   }, [filteredNodes]);
 
   return (
-    <>
-      {/* Chart Content Area */}
-      <div className="flex flex-row gap-10 h-[400px] items-start justify-start p-4 w-full">
+          <>
+        {/* Chart Content Area */}
+        <div className={`flex flex-row gap-10 items-start justify-start p-4 w-full ${fixedHeight ? 'flex-1 overflow-hidden' : 'h-[400px]'}`}>
         <div className="grow h-full min-h-px min-w-px relative">
           {loading ? (
             <div className="h-[420px] flex items-center justify-center rounded-lg bg-gray-50 text-gray-500">Loading…</div>
@@ -129,6 +135,7 @@ const OpportunityMatrixTab: React.FC<OpportunityMatrixTabProps> = ({
               mode="pop"
               colorByRetailer={seriesColorByRetailer}
               bubbleSizeRange={[300, 3000]}
+              uniformBubbles={uniformBubbles}
               xAxisLabel="Category demand (total views)"
               yAxisLabel="Brand presence (share)"
               xValueLabel="Demand"
@@ -154,7 +161,7 @@ const OpportunityMatrixTab: React.FC<OpportunityMatrixTabProps> = ({
       </div>
 
       {/* Insights Section - Full Width */}
-      {dynamicInsight && (
+      {showInsights && dynamicInsight && (
         <div className="mt-10">
           <InsightSection dynamicInsight={dynamicInsight} />
         </div>

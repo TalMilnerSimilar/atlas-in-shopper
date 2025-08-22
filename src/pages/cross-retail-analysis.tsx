@@ -35,6 +35,7 @@ const CrossRetailAnalysis: React.FC = () => {
   const [selectedLegendHosts, setSelectedLegendHosts] = useState<string[]>([]);
   const [hoveredDateIdx, setHoveredDateIdx] = useState<number | null>(null);
   const [chartHoverPos, setChartHoverPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [marketPositionEnabled, setMarketPositionEnabled] = useState(true);
 
   // Form state
   const [dateRange, setDateRange] = useState('Jun 2024 - Jul 2024');
@@ -80,6 +81,92 @@ const CrossRetailAnalysis: React.FC = () => {
       .catch(() => {})
       .finally(() => { /* no-op */ });
     return () => { isMounted = false; };
+  }, []);
+
+  // Listen for market position toggle
+  useEffect(() => {
+    // Load initial state
+    const saved = localStorage.getItem('marketPositionEnabled');
+    if (saved !== null) {
+      setMarketPositionEnabled(JSON.parse(saved));
+    }
+
+    // Listen for toggle events
+    const handleMarketPositionToggle = (event: CustomEvent) => {
+      setMarketPositionEnabled(event.detail.enabled);
+    };
+
+    window.addEventListener('marketPositionToggle', handleMarketPositionToggle as EventListener);
+    
+    return () => {
+      window.removeEventListener('marketPositionToggle', handleMarketPositionToggle as EventListener);
+    };
+  }, []);
+
+  // Table KPIs state and listener
+  const [tableKPIsEnabled, setTableKPIsEnabled] = useState(true);
+  
+  useEffect(() => {
+    // Load initial state
+    const saved = localStorage.getItem('tableKPIsEnabled');
+    if (saved !== null) {
+      setTableKPIsEnabled(JSON.parse(saved));
+    }
+
+    // Listen for toggle events
+    const handleTableKPIsToggle = (event: CustomEvent) => {
+      setTableKPIsEnabled(event.detail.enabled);
+    };
+
+    window.addEventListener('tableKPIsToggle', handleTableKPIsToggle as EventListener);
+    
+    return () => {
+      window.removeEventListener('tableKPIsToggle', handleTableKPIsToggle as EventListener);
+    };
+  }, []);
+
+  // Table filters state and listener
+  const [tableFiltersEnabled, setTableFiltersEnabled] = useState(true);
+  
+  useEffect(() => {
+    // Load initial state
+    const saved = localStorage.getItem('tableFiltersEnabled');
+    if (saved !== null) {
+      setTableFiltersEnabled(JSON.parse(saved));
+    }
+
+    // Listen for toggle events
+    const handleTableFiltersToggle = (event: CustomEvent) => {
+      setTableFiltersEnabled(event.detail.enabled);
+    };
+
+    window.addEventListener('tableFiltersToggle', handleTableFiltersToggle as EventListener);
+    
+    return () => {
+      window.removeEventListener('tableFiltersToggle', handleTableFiltersToggle as EventListener);
+    };
+  }, []);
+
+  // Grouped by region state and listener
+  const [groupedByRegionEnabled, setGroupedByRegionEnabled] = useState(true);
+  
+  useEffect(() => {
+    // Load initial state
+    const saved = localStorage.getItem('groupedByRegionEnabled');
+    if (saved !== null) {
+      setGroupedByRegionEnabled(JSON.parse(saved));
+    }
+
+    // Listen for toggle events
+    const handleGroupedByRegionToggle = (event: CustomEvent) => {
+      setGroupedByRegionEnabled(event.detail.enabled);
+    };
+
+    window.addEventListener('groupedByRegionToggle', handleGroupedByRegionToggle as EventListener);
+    
+    return () => {
+      window.removeEventListener('groupedByRegionToggle', handleGroupedByRegionToggle as EventListener);
+    };
   }, []);
 
   // Utility functions
@@ -624,7 +711,7 @@ const CrossRetailAnalysis: React.FC = () => {
             <div className="flex items-center gap-4">
                         <HeaderSelect label="Category" value={category} options={categoryOptions} onChange={setCategory} />
                         <span className="text-sm text-gray-500">Across</span>
-              <HeaderMultiSelect label="Retailers" value={selectedRetailers} options={retailerOptions} onChange={handleRetailerSelectionChange} />
+              <HeaderMultiSelect label="Retailers" value={selectedRetailers} options={retailerOptions} onChange={handleRetailerSelectionChange} showGroupedByRegion={groupedByRegionEnabled} />
                         <span className="text-sm text-gray-500">For</span>
                         <HeaderBrandsMultiSelect label="Brands" value={selectedBrands} options={brandsOptions} onChange={setSelectedBrands} />
                         <span className="text-sm text-gray-500">Against my brand</span>
@@ -648,15 +735,17 @@ const CrossRetailAnalysis: React.FC = () => {
               }
             }, 100);
           }} />
-          <MarketPositionChart
-            brandSel={brandSel}
-            currentBrandData={currentBrandData}
-            brandData={brandData}
-            onBrandHover={handleBrandHover}
-            onBrandLeave={handleBrandLeave}
-            getOrdinal={getOrdinal}
-            getBrandHeadline={getBrandHeadline}
-          />
+          {marketPositionEnabled && (
+            <MarketPositionChart
+              brandSel={brandSel}
+              currentBrandData={currentBrandData}
+              brandData={brandData}
+              onBrandHover={handleBrandHover}
+              onBrandLeave={handleBrandLeave}
+              getOrdinal={getOrdinal}
+              getBrandHeadline={getBrandHeadline}
+            />
+          )}
           <div data-chart-section>
             <MainChart
               activeTab={activeTab}
@@ -683,7 +772,7 @@ const CrossRetailAnalysis: React.FC = () => {
 
           {/* New full-width tile below the entire graph/tabs: Top performing SKUs */}
           <div className="mt-10">
-            <TopSkusTile retailers={nodesForSkus()} selectedBrandName={brandSel} selectedBrandsHeader={selectedBrands} />
+            <TopSkusTile retailers={nodesForSkus()} selectedBrandName={brandSel} selectedBrandsHeader={selectedBrands} showKPIs={tableKPIsEnabled} showFilters={tableFiltersEnabled} />
           </div>
         </div>
       </div>

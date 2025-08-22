@@ -6,9 +6,10 @@ interface HeaderMultiSelectProps {
   value: string[];
   options: string[];
   onChange: (value: string[]) => void;
+  showGroupedByRegion?: boolean;
 }
 
-const HeaderMultiSelect: React.FC<HeaderMultiSelectProps> = ({ label, value, options, onChange }) => {
+const HeaderMultiSelect: React.FC<HeaderMultiSelectProps> = ({ label, value, options, onChange, showGroupedByRegion = true }) => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
@@ -191,7 +192,7 @@ const HeaderMultiSelect: React.FC<HeaderMultiSelectProps> = ({ label, value, opt
                         ))}
 
                         {/* Regional section header */}
-                        {filteredOptions.some(opt => opt.startsWith('All ') && opt !== 'All Retailers') && (
+                        {showGroupedByRegion && filteredOptions.some(opt => opt.startsWith('All ') && opt !== 'All Retailers') && (
                           <div className="h-11 relative w-full bg-white flex items-center px-4 py-3">
                             <div className="text-[#B6BEC6] text-[14px] font-medium leading-[20px] uppercase" style={{ fontFamily: 'DM Sans, sans-serif' }}>
                               Grouped by region
@@ -200,7 +201,7 @@ const HeaderMultiSelect: React.FC<HeaderMultiSelectProps> = ({ label, value, opt
                         )}
 
                         {/* Regional options */}
-                        {filteredOptions.filter(opt => opt.startsWith('All ') && opt !== 'All Retailers').map(opt => (
+                        {showGroupedByRegion && filteredOptions.filter(opt => opt.startsWith('All ') && opt !== 'All Retailers').map(opt => (
                           <div 
                             key={opt} 
                             className="h-11 relative w-full bg-white cursor-pointer hover:bg-gray-50 flex items-center justify-between px-4 py-3" 

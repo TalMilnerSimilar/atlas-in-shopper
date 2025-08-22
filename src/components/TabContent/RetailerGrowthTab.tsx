@@ -27,6 +27,8 @@ interface RetailerGrowthTabProps {
     sentence: string;
     chips: Array<{ text: string; tone: 'pos' | 'neg' | 'neu' }>;
   };
+  showInsights?: boolean;
+  fixedHeight?: boolean;
 }
 
 const RetailerGrowthTab: React.FC<RetailerGrowthTabProps> = ({
@@ -46,11 +48,13 @@ const RetailerGrowthTab: React.FC<RetailerGrowthTabProps> = ({
   onSelectAll,
   isLegendItemDisabled,
   dynamicInsight,
+  showInsights = true,
+  fixedHeight = false,
 }) => {
   return (
     <>
       {/* Chart Content Area */}
-      <div className="flex flex-row gap-10 h-[400px] items-start justify-start p-4 w-full">
+      <div className={`flex flex-row gap-10 items-start justify-start p-4 w-full ${fixedHeight ? 'flex-1 overflow-hidden' : 'h-[400px]'}`}>
         {/* Line Chart */}
         <div className="grow h-full min-h-px min-w-px relative">
           {/* Y-Axis and Chart Area */}
@@ -178,7 +182,7 @@ const RetailerGrowthTab: React.FC<RetailerGrowthTabProps> = ({
       </div>
 
       {/* Insights Section (dynamic) */}
-      <InsightSection dynamicInsight={dynamicInsight} />
+      {showInsights && <InsightSection dynamicInsight={dynamicInsight} />}
     </>
   );
 };

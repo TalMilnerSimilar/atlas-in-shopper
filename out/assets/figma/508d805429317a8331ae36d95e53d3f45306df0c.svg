@@ -1,0 +1,10 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Icon/Flag/canada">
+<circle id="Oval" cx="8" cy="8" r="8" fill="var(--fill-0, #F0F0F0)"/>
+<g id="Group">
+<path id="Shape" d="M16 8C16 4.82831 14.1542 2.08781 11.4782 0.793813V15.2062C14.1542 13.9122 16 11.1717 16 8Z" fill="var(--fill-0, #D80027)"/>
+<path id="Shape_2" d="M0 8C0 11.1717 1.84578 13.9122 4.52175 15.2062V0.793813C1.84578 2.08781 0 4.82831 0 8Z" fill="var(--fill-0, #D80027)"/>
+<path id="Shape_3" d="M9.39131 9.04347L10.7826 8.34781L10.087 8V7.30434L8.69566 8L9.39131 6.60869H8.69566L8 5.56522L7.30434 6.60869H6.60869L7.30434 8L5.91303 7.30434V8L5.21741 8.34781L6.60869 9.04347L6.26087 9.73912H7.65219V10.7826H8.34781V9.73912H9.73912L9.39131 9.04347Z" fill="var(--fill-0, #D80027)"/>
+</g>
+</g>
+</svg>

@@ -1,0 +1,3 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path id="IconShape" fill-rule="evenodd" clip-rule="evenodd" d="M13 18V15H17C18.6569 15 20 13.6569 20 12V3C20 1.34315 18.6569 0 17 0H3C1.34315 0 0 1.34315 0 3V12C0 13.6569 1.34315 15 3 15H7V18H4.45455V20H15.5908V18H13ZM18 3V9H2V3C2 2.44772 2.44772 2 3 2H17C17.5523 2 18 2.44772 18 3ZM18 11H2V12C2 12.5523 2.44772 13 3 13H17C17.5523 13 18 12.5523 18 12V11ZM9 15H11V18H9V15Z" fill="var(--fill-0, #B6BEC6)"/>
+</svg>
