@@ -145,7 +145,7 @@ const MainChart: React.FC<MainChartProps> = ({
     'retailer-growth': 'Track how each retailer\'s views are trending over time. Shows absolute view counts and growth patterns.',
     'brand-performance': 'See what percentage of your brand each retailer represents. Shows relative market share distribution.',
     'opportunity-matrix': 'Identify which retailers offer the best growth opportunities based on demand vs. your current presence.',
-    'competitive-landscape': 'Analyze head-to-head competition with other brands across different retailers.'
+    'competitive-landscape': 'Analyze retailer performance with total views vs YoY growth, sized by your brand performance within each retailer.'
   };
       return (
       <div className={`bg-white border border-gray-200 rounded-lg mb-8 ${!graphInsightsEnabled ? 'h-[526px] flex flex-col' : ''}`}>
@@ -158,7 +158,7 @@ const MainChart: React.FC<MainChartProps> = ({
               { id: 'retailer-growth', title: 'Retailer Growth Over Time' },
               { id: 'brand-performance', title: 'Retailers\' Share of the Brand' },
               { id: 'opportunity-matrix', title: 'Retailer Opportunity Matrix' },
-              { id: 'competitive-landscape', title: 'Brand Competitive landscape' },
+              { id: 'competitive-landscape', title: 'Retailer Performance Analysis' },
             ].filter(tab => tabVisibility[tab.id as keyof typeof tabVisibility]).map((tab, index, visibleTabs) => (
               <React.Fragment key={tab.id}>
                 <div 
@@ -262,7 +262,15 @@ const MainChart: React.FC<MainChartProps> = ({
         )}
         {activeTab === 'competitive-landscape' && (
           <CompetitiveLandscapeTab 
-            selectedBrandName={selectedBrandName}
+            selectedLegendHosts={selectedLegendHosts}
+            legendRetailers={legendRetailers}
+            maxRetailerSelections={maxRetailerSelections}
+            onRetailerToggle={onRetailerToggle}
+            onClearAll={onClearAll}
+            onSelectAll={onSelectAll}
+            formatSkus={formatSkus}
+            isLegendItemDisabled={isLegendItemDisabled}
+            seriesColorByRetailer={seriesColorByRetailer}
             showInsights={graphInsightsEnabled}
             fixedHeight={!graphInsightsEnabled}
             uniformBubbles={!bubbleSizesEnabled}

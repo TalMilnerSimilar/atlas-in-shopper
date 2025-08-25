@@ -168,6 +168,50 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
     if (savedGroupedByRegion !== null) {
       setGroupedByRegionEnabled(JSON.parse(savedGroupedByRegion));
     }
+
+    // Apply MVP defaults on first load (only if not previously set by user)
+    // MVP preset: Grouped by Region OFF, Market Position Tile OFF,
+    // Graph Insights OFF, Aggregate by Brands OFF, Aggregate by Retailers OFF
+    const mvpApplied = localStorage.getItem('mvpDefaultApplied');
+    if (!mvpApplied) {
+      // Grouped by Region -> off
+      if (localStorage.getItem('groupedByRegionEnabled') === null) {
+        setGroupedByRegionEnabled(false);
+        localStorage.setItem('groupedByRegionEnabled', JSON.stringify(false));
+        window.dispatchEvent(new CustomEvent('groupedByRegionToggle', { detail: { enabled: false } }));
+      }
+
+      // Market Position Tile -> off
+      if (localStorage.getItem('marketPositionEnabled') === null) {
+        setMarketPositionEnabled(false);
+        localStorage.setItem('marketPositionEnabled', JSON.stringify(false));
+        window.dispatchEvent(new CustomEvent('marketPositionToggle', { detail: { enabled: false } }));
+      }
+
+      // Graph Insights -> off
+      if (localStorage.getItem('graphInsightsEnabled') === null) {
+        setGraphInsightsEnabled(false);
+        localStorage.setItem('graphInsightsEnabled', JSON.stringify(false));
+        window.dispatchEvent(new CustomEvent('graphInsightsToggle', { detail: { enabled: false } }));
+      }
+
+      // Aggregate by Brands -> off
+      if (localStorage.getItem('aggregateByBrandsEnabled') === null) {
+        setAggregateByBrandsEnabled(false);
+        localStorage.setItem('aggregateByBrandsEnabled', JSON.stringify(false));
+        window.dispatchEvent(new CustomEvent('aggregateTabToggle', { detail: { tabType: 'brands', enabled: false } }));
+      }
+
+      // Aggregate by Retailers -> off
+      if (localStorage.getItem('aggregateByRetailersEnabled') === null) {
+        setAggregateByRetailersEnabled(false);
+        localStorage.setItem('aggregateByRetailersEnabled', JSON.stringify(false));
+        window.dispatchEvent(new CustomEvent('aggregateTabToggle', { detail: { tabType: 'retailers', enabled: false } }));
+      }
+
+      // Mark applied so we don't override user choices next time
+      localStorage.setItem('mvpDefaultApplied', 'true');
+    }
   }, []);
 
   const handleKpiLinksToggle = (enabled: boolean) => {
@@ -382,6 +426,19 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
                 className="px-3 py-2 bg-[#F5F8FF] hover:bg-white border border-[#E6E9EC] hover:border-[#195afe]/20 text-[#092540] rounded text-[14px] font-medium transition-colors"
               >
                 Reset All
+              </button>
+              <button
+                onClick={() => {
+                  // MVP Preset
+                  handleGroupedByRegionToggle(false);
+                  handleMarketPositionToggle(false);
+                  handleGraphInsightsToggle(false);
+                  handleAggregateByBrandsToggle(false);
+                  handleAggregateByRetailersToggle(false);
+                }}
+                className="px-3 py-2 bg-[#195afe] hover:bg-[#164de0] border border-[#195afe]/20 text-white rounded text-[14px] font-medium transition-colors"
+              >
+                MVP Preset
               </button>
               <button
                 onClick={onClose}

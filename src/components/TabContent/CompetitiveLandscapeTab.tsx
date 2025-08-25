@@ -2,129 +2,104 @@ import React, { useEffect, useMemo, useState } from 'react';
 import RetailerOpportunityMatrix from '../RetailerOpportunityMatrix';
 import ChartLegend from '../ChartLegend';
 import InsightSection from '../InsightSection';
-import { brandsOptions } from '../../data/brandsOptions';
 import { RetailerNode } from '../../analytics/opportunity';
-import { pickCompetitorLandscapeInsight, CompetitorRow } from '../../analytics/CompetitorLandscapeInsight';
+import { pickRetailerPerformanceInsight, RetailerPerformanceRow } from '../../analytics/RetailerPerformanceInsight';
 
-const palette = ['#195AFE', '#22C55E', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#F97316', '#10B981', '#EC4899', '#14B8A6'];
-
-function hashString(s: string): number {
-  let h = 2166136261 >>> 0;
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
+interface CompetitiveLandscapeTabProps {
+  selectedLegendHosts: string[];
+  legendRetailers: Array<{ name: string; skus: number }>;
+  maxRetailerSelections: number;
+  onRetailerToggle: (hostLabel: string) => void;
+  onClearAll: () => void;
+  onSelectAll: () => void;
+  formatSkus: (value: number) => string;
+  isLegendItemDisabled: (host: string) => boolean;
+  seriesColorByRetailer: Record<string, string>;
+  showInsights?: boolean;
+  fixedHeight?: boolean;
+  uniformBubbles?: boolean;
 }
 
-function seededRand(seed: number) {
-  let state = seed >>> 0;
-  return () => {
-    state = (Math.imul(1664525, state) + 1013904223) >>> 0;
-    return state / 4294967296;
-  };
-}
-
-const formatSkus = (skus: number): string => {
-  if (skus >= 1000) return `${(skus / 1000).toFixed(1).replace(/\.0$/, '')}K`;
-  return `${skus}`;
-};
-
-const CompetitiveLandscapeTab: React.FC<{ selectedBrandName: string; showInsights?: boolean; fixedHeight?: boolean; uniformBubbles?: boolean }> = ({ selectedBrandName, showInsights = true, fixedHeight = false, uniformBubbles = false }) => {
+const CompetitiveLandscapeTab: React.FC<CompetitiveLandscapeTabProps> = ({
+  selectedLegendHosts,
+  legendRetailers,
+  maxRetailerSelections,
+  onRetailerToggle,
+  onClearAll,
+  onSelectAll,
+  formatSkus,
+  isLegendItemDisabled,
+  seriesColorByRetailer,
+  showInsights = true,
+  fixedHeight = false,
+  uniformBubbles = false,
+}) => {
   const [nodes, setNodes] = useState<RetailerNode[]>([]);
-  const [selectedLegendHosts, setSelectedLegendHosts] = useState<string[]>([]);
-  const [legendBrands, setLegendBrands] = useState<{ name: string; skus: number }[]>([]);
-  const [colorByBrand, setColorByBrand] = useState<Record<string, string>>({});
-  const maxSelections = 7;
+  const [loading, setLoading] = useState(false);
 
-  // Build synthetic brand landscape
   useEffect(() => {
-    const brands = brandsOptions.filter(b => b !== 'All Brands');
-    const items = brands.map(name => {
-      const h = hashString(name.toLowerCase());
-      // Pseudo SKU count for legend display
-      const skus = 600 + (h % 5800);
-      return { name, skus };
-    });
-    items.sort((a, b) => b.skus - a.skus);
-    setLegendBrands(items);
+    setLoading(true);
+    fetch('/data/retailer_series.csv', { cache: 'no-store' })
+      .then(r => r.text())
+      .then(text => {
+        const map: Record<string, { current: number[]; prevYoy: number[] }> = {};
+        text.split(/\r?\n/).forEach(line => {
+          const trimmed = (line || '').trim();
+          if (!trimmed || trimmed.startsWith('#') || /^key\b/i.test(trimmed)) return;
+          const parts = trimmed.split(',').map(s => s.trim());
+          if (parts.length < 22) return;
+          const key = parts[0];
+          const current = parts.slice(1, 8).map(v => parseInt(v, 10)).filter(n => !Number.isNaN(n));
+          const prevYoy = parts.slice(15, 22).map(v => parseInt(v, 10)).filter(n => !Number.isNaN(n));
+          if (key && current.length === 7 && prevYoy.length === 7) {
+            map[key] = { current, prevYoy };
+          }
+        });
 
-    // Default select top 4 brands
-    const defaults = items.slice(0, Math.min(4, items.length)).map(i => i.name);
-    setSelectedLegendHosts(defaults);
+        const toNodes: RetailerNode[] = Object.entries(map).map(([host, s]) => {
+          const avg = (arr: number[]) => (arr.reduce((a, b) => a + b, 0) / arr.length) || 0;
+          const yourBrandViews = avg(s.current); // bubble size
 
-    // Colors per brand
-    const colors: Record<string, string> = {};
-    items.forEach((it, idx) => {
-      colors[it.name] = palette[idx % palette.length];
-    });
-    setColorByBrand(colors);
+          // Assume stable share to back into total views
+          const seed = host.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+          const assumedShare = Math.max(0.05, Math.min(0.30, 0.10 + ((seed % 100) / 1000)));
+          const totalViewsNow = yourBrandViews > 0 ? Math.max(1000, yourBrandViews / assumedShare) : Math.max(2000, (seed % 8000) + 2000);
+          const totalViewsYoy = avg(s.prevYoy) / assumedShare || (totalViewsNow * 0.9);
 
-    // Generate brand nodes
-    const genNodes: RetailerNode[] = items.map(({ name, skus }) => {
-      const seed = hashString(name);
-      const rnd = seededRand(seed);
-      // Overlap demand range ~2M..15M for category demand where both brands compete
-      const overlapDemand = 2_000_000 + Math.floor(rnd() * 13_000_000);
-      
-      // Generate competitor and your shares in the overlap more realistically
-      const compShare = 0.10 + rnd() * 0.60; // 10%-70% for competitor
-      const yourShare = 0.10 + rnd() * 0.60; // 10%-70% for you
-      
-      const compViews = Math.round(overlapDemand * compShare);
-      const yourViews = Math.round(overlapDemand * yourShare);
-      
-      // Calculate head-to-head lead: (comp - you) / (comp + you)
-      const totalViews = compViews + yourViews;
-      const leadDecimal = totalViews > 0 ? (compViews - yourViews) / totalViews : 0;
-      
-      const dgPop = (rnd() - 0.5) * 0.30; // ~±30%
-      const dgYoy = (rnd() - 0.5) * 0.40; // ~±40%
-      const sdPop = (rnd() - 0.5) * 0.02; // ±2pp
-      const sdYoy = (rnd() - 0.5) * 0.03; // ±3pp
-      // Simulate shared retailers count (3-15 retailers where both brands are present)
-      const sharedRetailers = Math.floor(3 + (seed % 13));
-      
-      return {
-        retailerId: name,
-        retailerName: name,
-        demand_weekly: overlapDemand, // X-axis: overlap demand
-        brand_share: leadDecimal, // Y-axis: head-to-head lead
-        brand_views_weekly: compViews, // Bubble size: competitor views
-        demand_growth_pop: dgPop,
-        demand_growth_yoy: dgYoy,
-        brand_share_delta_pop: sdPop,
-        brand_share_delta_yoy: sdYoy,
-        shared_retailers_count: sharedRetailers,
-        skus,
-        your_overlap_views: yourViews, // Store your views for insight calculation
-      } as RetailerNode & { shared_retailers_count: number; skus: number; your_overlap_views: number };
-    });
-    setNodes(genNodes);
+          const yoyGrowth = totalViewsYoy > 0 ? (totalViewsNow - totalViewsYoy) / totalViewsYoy : 0; // decimal
+
+          return {
+            retailerId: host,
+            retailerName: host,
+            demand_weekly: Math.round(totalViewsNow),
+            brand_share: yoyGrowth, // use Y as growth decimal
+            brand_views_weekly: Math.round(yourBrandViews),
+            demand_growth_yoy: yoyGrowth,
+          } as RetailerNode;
+        });
+
+        setNodes(toNodes);
+      })
+      .catch(() => setNodes([]))
+      .finally(() => setLoading(false));
   }, []);
 
   const filteredNodes = useMemo(() => {
-    if (!selectedLegendHosts.length) return [] as RetailerNode[];
+    if (!selectedLegendHosts?.length) return nodes.slice(0, 7);
     const set = new Set(selectedLegendHosts);
-    return nodes.filter(n => set.has(n.retailerName));
+    const f = nodes.filter(n => set.has(n.retailerName));
+    return f.length ? f : nodes.slice(0, 7);
   }, [nodes, selectedLegendHosts]);
 
-  // Build competitive insight using TOTAL-overlap logic
   const dynamicInsight = useMemo(() => {
     if (!filteredNodes.length) return null;
-    const rows: CompetitorRow[] = filteredNodes.map(n => {
-      const overlapCategoryViews = Math.max(0, n.demand_weekly || 0);
-      const compViewsOverlap = Math.max(0, n.brand_views_weekly || 0);
-      // Use the stored your_overlap_views from synthetic data
-      const myViewsOverlap = Math.max(0, (n as any).your_overlap_views || 0);
-      return {
-        brand: n.retailerName,
-        overlapCategoryViews,
-        myViewsOverlap,
-        compViewsOverlap,
-      };
-    });
-    const insight = pickCompetitorLandscapeInsight(rows);
+    const rows: RetailerPerformanceRow[] = filteredNodes.map(n => ({
+      retailer: n.retailerName,
+      totalViews: n.demand_weekly,
+      yoyGrowthPP: (n.brand_share as number) * 100,
+      yourBrandViews: n.brand_views_weekly,
+    }));
+    const insight = pickRetailerPerformanceInsight(rows);
     return {
       headline: insight.title,
       sentence: insight.text,
@@ -132,61 +107,49 @@ const CompetitiveLandscapeTab: React.FC<{ selectedBrandName: string; showInsight
     };
   }, [filteredNodes]);
 
-  const onToggle = (name: string) => {
-    setSelectedLegendHosts(prev => {
-      const exists = prev.includes(name);
-      if (exists) return prev.filter(n => n !== name);
-      if (prev.length >= maxSelections) return prev; // respect max selections
-      return [...prev, name];
-    });
-  };
-
-  const onClearAll = () => setSelectedLegendHosts([]);
-  const onSelectAll = () => setSelectedLegendHosts(legendBrands.slice(0, maxSelections).map(b => b.name));
-  const isItemDisabled = (name: string) => !selectedLegendHosts.includes(name) && selectedLegendHosts.length >= maxSelections;
-
   return (
-          <>
-        {/* Chart Content Area */}
-        <div className={`flex flex-row gap-10 items-start justify-start p-4 w-full ${fixedHeight ? 'flex-1 overflow-hidden' : 'h-[400px]'}`}>
+    <>
+      <div className={`flex flex-row gap-10 items-start justify-start p-4 w-full ${fixedHeight ? 'flex-1 overflow-hidden' : 'h-[400px]'}`}>
         <div className="grow h-full min-h-px min-w-px relative">
-          <RetailerOpportunityMatrix
-            data={filteredNodes}
-            mode="pop"
-            colorByRetailer={colorByBrand}
-            quadrantTitles={{
-              topLeft: 'Niche rival',
-              topRight: 'Strong rival',
-              bottomLeft: 'Low overlap',
-              bottomRight: 'Your stronghold'
-            }}
-            uniformBubbles={uniformBubbles}
-            xAxisLabel="Overlap demand (total views)"
-            yAxisLabel="Head-to-head lead vs you (pp)"
-            xValueLabel="Overlap demand"
-            yValueLabel={`Lead against ${selectedBrandName}`}
-            yTickFormatter={(v)=>`${Math.round(v*100)}pp`}
-            xAxisTooltip="The size of the battleground between you and a competitor. Sum of total category views in all selected retailers where both of you are present."
-            yAxisTooltip="Shows who's winning in head-to-head competition. Calculated as competitor's share minus your share in retailers where you both sell. Positive values mean they lead, negative means you lead."
-            bubbleSizeRange={[300, 3000]}
-          />
+          {loading ? (
+            <div className="h-[420px] flex items-center justify-center rounded-lg bg-gray-50 text-gray-500">Loading…</div>
+          ) : (
+            <RetailerOpportunityMatrix
+              data={filteredNodes}
+              mode="pop"
+              colorByRetailer={seriesColorByRetailer}
+              bubbleSizeRange={[300, 3000]}
+              uniformBubbles={uniformBubbles}
+              quadrantTitles={{
+                topLeft: 'Rising stars',
+                topRight: 'Growth leaders',
+                bottomLeft: 'Underperformers',
+                bottomRight: 'Declining giants',
+              }}
+              xAxisLabel="Total retailer views"
+              yAxisLabel="YoY growth (pp)"
+              xValueLabel="Total views"
+              yValueLabel="YoY growth"
+              yTickFormatter={(v) => `${(v as number) > 0 ? '+' : ''}${Math.round((v as number) * 100)}pp`}
+              xAxisTooltip="Total views for this retailer within the selected category and brands."
+              yAxisTooltip="Year-over-year growth in percentage points. Positive values indicate growth, negative values indicate decline."
+            />
+          )}
         </div>
 
-        {/* Legend Sidebar */}
         <ChartLegend
-          legendRetailers={legendBrands}
+          legendRetailers={legendRetailers}
           selectedLegendHosts={selectedLegendHosts}
-          seriesColorByRetailer={colorByBrand}
-          maxRetailerSelections={maxSelections}
-          onRetailerToggle={onToggle}
+          seriesColorByRetailer={seriesColorByRetailer}
+          maxRetailerSelections={maxRetailerSelections}
+          onRetailerToggle={onRetailerToggle}
           onClearAll={onClearAll}
           onSelectAll={onSelectAll}
           formatSkus={formatSkus}
-          isLegendItemDisabled={isItemDisabled}
+          isLegendItemDisabled={isLegendItemDisabled}
         />
       </div>
 
-      {/* Insights Section - Full Width */}
       {showInsights && dynamicInsight && (
         <div className="mt-10">
           <InsightSection dynamicInsight={dynamicInsight} />
