@@ -44,13 +44,22 @@ const TrafficShareCard: React.FC<TrafficShareCardProps> = ({ onNavigateToTab, fi
           data.prevPop.forEach((views, i) => totalPrevViews[i] += views);
         });
 
-        // Simulate "your brand" views (using a consistent seed for demo)
+        // Simulate "your brand" views with realistic variation between periods
         // In a real app, this would come from selected brand data
         const brandSeed = 'Apple'.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-        const brandShareAssumption = Math.max(0.15, Math.min(0.45, 0.25 + ((brandSeed % 100) / 500))); // 15-45% range
+        const baseShareAssumption = Math.max(0.15, Math.min(0.45, 0.25 + ((brandSeed % 100) / 500))); // 15-45% range
         
-        const brandCurrentViews = totalCurrentViews.map(total => Math.round(total * brandShareAssumption));
-        const brandPrevViews = totalPrevViews.map(total => Math.round(total * brandShareAssumption));
+        // Add realistic variation between current and previous periods
+        const growthFactor = 1 + ((brandSeed % 50) - 25) / 1000; // -2.5% to +2.5% variation
+        const currentShareAssumption = baseShareAssumption * growthFactor;
+        const prevShareAssumption = baseShareAssumption;
+        
+        const brandCurrentViews = totalCurrentViews.map((total, i) => {
+          // Add weekly variation to make sparkline more realistic
+          const weeklyVariation = 1 + (Math.sin(i * 0.5 + brandSeed) * 0.03); // ±3% weekly variation
+          return Math.round(total * currentShareAssumption * weeklyVariation);
+        });
+        const brandPrevViews = totalPrevViews.map(total => Math.round(total * prevShareAssumption));
 
         // Calculate current period share percentage
         const currentTotalViews = totalCurrentViews.reduce((sum, views) => sum + views, 0);
