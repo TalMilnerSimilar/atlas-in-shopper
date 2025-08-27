@@ -35,11 +35,11 @@ const KPIRow: React.FC<KPIRowProps> = ({ onNavigateToTab }) => {
         onNavigateToTab={kpiLinksEnabled ? onNavigateToTab : undefined} 
         fixedHeight={!kpiLinksEnabled}
       />
-      <LeadingRetailersCard 
+      <BestRetailerCard 
         onNavigateToTab={kpiLinksEnabled ? onNavigateToTab : undefined} 
         fixedHeight={!kpiLinksEnabled}
       />
-      <BestRetailerCard 
+      <LeadingRetailersCard 
         onNavigateToTab={kpiLinksEnabled ? onNavigateToTab : undefined} 
         fixedHeight={!kpiLinksEnabled}
       />
