@@ -34,6 +34,8 @@ const CompetitiveLandscapeTab: React.FC<CompetitiveLandscapeTabProps> = ({
   fixedHeight = false,
   uniformBubbles = false,
 }) => {
+  // Legend remains retailer-based for this tab
+
   const [nodes, setNodes] = useState<RetailerNode[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -84,12 +86,17 @@ const CompetitiveLandscapeTab: React.FC<CompetitiveLandscapeTabProps> = ({
       .finally(() => setLoading(false));
   }, []);
 
+  // Only filter by retailer names found in legendRetailers; ignore brand names in selectedLegendHosts
   const filteredNodes = useMemo(() => {
-    if (!selectedLegendHosts?.length) return nodes.slice(0, 7);
-    const set = new Set(selectedLegendHosts);
+    // Build set of retailer names from the legendRetailers prop
+    const availableRetailers = new Set((legendRetailers || []).map(r => r.name));
+    // Intersect selectedLegendHosts with available retailers
+    const selectedRetailers = (selectedLegendHosts || []).filter(h => availableRetailers.has(h));
+    if (!selectedRetailers.length) return nodes.slice(0, Math.min(nodes.length, 7));
+    const set = new Set(selectedRetailers);
     const f = nodes.filter(n => set.has(n.retailerName));
-    return f.length ? f : nodes.slice(0, 7);
-  }, [nodes, selectedLegendHosts]);
+    return f.length ? f : nodes.slice(0, Math.min(nodes.length, 7));
+  }, [nodes, selectedLegendHosts, legendRetailers]);
 
   const dynamicInsight = useMemo(() => {
     if (!filteredNodes.length) return null;

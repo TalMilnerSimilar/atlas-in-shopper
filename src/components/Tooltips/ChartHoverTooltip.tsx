@@ -8,7 +8,7 @@ interface ChartHoverTooltipProps {
   getSeriesForRetailer: (host: string) => number[];
   seriesColorByRetailer: Record<string, string>;
   formatSkus: (value: number) => string;
-  mode?: 'views' | 'share';
+  mode?: 'views' | 'share' | 'brandShare';
   allHeaderHosts?: string[]; // hosts included in header selection for share denominator
 }
 
@@ -28,18 +28,28 @@ const ChartHoverTooltip: React.FC<ChartHoverTooltipProps> = ({
   }
 
   const calcTotals = () => {
-    const headerHosts = (allHeaderHosts && allHeaderHosts.length > 0) ? allHeaderHosts : selectedLegendHosts;
-    let selectedTotal = 0;
-    let headerTotal = 0;
-    selectedLegendHosts.forEach((host) => {
-      const series = getSeriesForRetailer(host) || [];
-      selectedTotal += series[hoveredDateIdx] || 0;
-    });
-    headerHosts.forEach((host) => {
-      const series = getSeriesForRetailer(host) || [];
-      headerTotal += series[hoveredDateIdx] || 0;
-    });
-    return { selectedTotal, headerTotal };
+    if (mode === 'brandShare') {
+      // In brandShare mode, values are already percentages, so just sum them
+      let selectedTotal = 0;
+      selectedLegendHosts.forEach((host) => {
+        const series = getSeriesForRetailer(host) || [];
+        selectedTotal += series[hoveredDateIdx] || 0;
+      });
+      return { selectedTotal, headerTotal: 100 }; // headerTotal not used in brandShare mode
+    } else {
+      const headerHosts = (allHeaderHosts && allHeaderHosts.length > 0) ? allHeaderHosts : selectedLegendHosts;
+      let selectedTotal = 0;
+      let headerTotal = 0;
+      selectedLegendHosts.forEach((host) => {
+        const series = getSeriesForRetailer(host) || [];
+        selectedTotal += series[hoveredDateIdx] || 0;
+      });
+      headerHosts.forEach((host) => {
+        const series = getSeriesForRetailer(host) || [];
+        headerTotal += series[hoveredDateIdx] || 0;
+      });
+      return { selectedTotal, headerTotal };
+    }
   };
 
   const { selectedTotal, headerTotal } = calcTotals();
@@ -55,6 +65,10 @@ const ChartHoverTooltip: React.FC<ChartHoverTooltipProps> = ({
       {mode === 'views' ? (
         <div className="text-[12px] text-[#6b7c8c] mb-3" style={{ fontFamily: 'DM Sans, sans-serif' }}>
           Total daily views – {formatSkus(selectedTotal)}
+        </div>
+      ) : mode === 'brandShare' ? (
+        <div className="text-[12px] text-[#6b7c8c] mb-3" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+          Selected share – {selectedTotal.toFixed(1)}%
         </div>
       ) : (
         <div className="text-[12px] text-[#6b7c8c] mb-3" style={{ fontFamily: 'DM Sans, sans-serif' }}>
@@ -73,7 +87,7 @@ const ChartHoverTooltip: React.FC<ChartHoverTooltipProps> = ({
                 <span className="text-[13px] text-[#092540]" style={{ fontFamily: 'Roboto, sans-serif' }}>{host}</span>
               </div>
               <div className="text-[13px] font-semibold text-[#092540]" style={{ fontFamily: 'Roboto, sans-serif' }}>
-                {mode === 'views' ? formatSkus(value) : (headerTotal > 0 ? `${((value / headerTotal) * 100).toFixed(0)}%` : '0%')}
+                {mode === 'views' ? formatSkus(value) : mode === 'brandShare' ? `${value.toFixed(1)}%` : (headerTotal > 0 ? `${((value / headerTotal) * 100).toFixed(0)}%` : '0%')}
               </div>
             </div>
           );

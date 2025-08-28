@@ -13,6 +13,7 @@ import KPIRow from '../components/KPIRow';
 import MarketPositionChart from '../components/MarketPositionChart';
 import MainChart from '../components/MainChart';
 import TopSkusTile from '../components/TopSkusTile';
+import RetailerBrandShareTile from '../components/RetailerBrandShareTile';
 import BrandTooltip from '../components/Tooltips/BrandTooltip';
 import ChartHoverTooltip from '../components/Tooltips/ChartHoverTooltip';
 import { RetailerNode } from '../analytics/opportunity';
@@ -32,10 +33,12 @@ const CrossRetailAnalysis: React.FC = () => {
   const [hoveredBrand, setHoveredBrand] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [selectedChartRetailers, setSelectedChartRetailers] = useState<Set<string>>(new Set());
-  const [selectedLegendHosts, setSelectedLegendHosts] = useState<string[]>([]);
+  const [retailerSelectedLegendHosts, setRetailerSelectedLegendHosts] = useState<string[]>([]);
+  const [brandSelectedLegendHosts, setBrandSelectedLegendHosts] = useState<string[]>([]);
   const [hoveredDateIdx, setHoveredDateIdx] = useState<number | null>(null);
   const [chartHoverPos, setChartHoverPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [marketPositionEnabled, setMarketPositionEnabled] = useState(true);
+  const [brandStrongholdsEnabled, setBrandStrongholdsEnabled] = useState(true);
 
   // Form state
   const [dateRange, setDateRange] = useState('Jun 2024 - Jul 2024');
@@ -102,6 +105,60 @@ const CrossRetailAnalysis: React.FC = () => {
       window.removeEventListener('marketPositionToggle', handleMarketPositionToggle as EventListener);
     };
   }, []);
+
+  // Listen for Brand Strongholds toggle
+  useEffect(() => {
+    const saved = localStorage.getItem('brandStrongholdsEnabled');
+    if (saved !== null) {
+      setBrandStrongholdsEnabled(JSON.parse(saved));
+    }
+
+    const handleBrandStrongholdsToggle = (event: CustomEvent) => {
+      setBrandStrongholdsEnabled(event.detail.enabled);
+    };
+
+    window.addEventListener('brandStrongholdsToggle', handleBrandStrongholdsToggle as EventListener);
+    return () => window.removeEventListener('brandStrongholdsToggle', handleBrandStrongholdsToggle as EventListener);
+  }, []);
+
+  // Listen for scroll-to-Brand-Strongholds event
+  useEffect(() => {
+    const handleScrollToStrongholds = () => {
+      const el = document.querySelector('[data-strongholds-section]') as HTMLElement | null;
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    window.addEventListener('scrollToBrandStrongholds', handleScrollToStrongholds as EventListener);
+    return () => window.removeEventListener('scrollToBrandStrongholds', handleScrollToStrongholds as EventListener);
+  }, []);
+
+  // Helper function to get brands sorted by SKU count (same logic as BrandCompetitiveLandscapeTab)
+  const getSortedBrands = (brands: string[]) => {
+    const computeBrandSkus = (brand: string): number => {
+      let h = 2166136261 >>> 0;
+      for (let i = 0; i < brand.length; i++) {
+        h ^= brand.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+        h = h >>> 0; // Ensure unsigned
+      }
+      return 300 + (h % 1201);
+    };
+    return brands
+      .map(b => ({ name: b, skus: computeBrandSkus(b) }))
+      .sort((a, b) => b.skus - a.skus)
+      .map(b => b.name);
+  };
+
+  // Initialize brand legend defaults (top 4 brands) for Brand Competitive tab
+  useEffect(() => {
+    if (brandSelectedLegendHosts.length === 0) {
+      const allBrands = selectedBrands.includes('All Brands')
+        ? brandsOptions.filter(b => b !== 'All Brands')
+        : selectedBrands;
+      const sortedBrands = getSortedBrands(allBrands);
+      const defaults = sortedBrands.slice(0, Math.min(4, sortedBrands.length));
+      setBrandSelectedLegendHosts(defaults);
+    }
+  }, [selectedBrands]);
 
   // Table KPIs state and listener
   const [tableKPIsEnabled, setTableKPIsEnabled] = useState(true);
@@ -288,6 +345,38 @@ const CrossRetailAnalysis: React.FC = () => {
     return cache[hostKey];
   };
 
+  // Brand share computation for retailer-growth tab - MUST match RetailerGrowthTab exactly
+  const computeBrandShareForHost = (host: string, retailerSeries: number[]): number[] => {
+    // Deterministic seed from brand+host
+    const key = `${brandSel}|${host}`;
+    let hash = 2166136261 >>> 0;
+    for (let i = 0; i < key.length; i++) {
+      hash ^= key.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    const rnd = () => {
+      hash ^= hash << 13; hash ^= hash >>> 17; hash ^= hash << 5; return ((hash >>> 0) % 10000) / 10000;
+    };
+    const baseShare = 0.06 + rnd() * 0.18; // 6% - 24%
+    return retailerSeries.map((total, i) => {
+      const noise = (Math.sin(i * 0.7 + hash) * 0.02); // ±2pp
+      const share = Math.max(0.01, Math.min(0.6, baseShare + noise));
+      // Always return share percentage, even if retailer total is 0 (represents potential/target share)
+      return share * 100; // percent
+    });
+  };
+
+  const getSeriesForRetailerInMode = (hostLabel: string): number[] => {
+    if (activeTab === 'retailer-growth') {
+      // Return brand share percentages
+      const rawSeries = getSeriesForRetailer(hostLabel);
+      return computeBrandShareForHost(hostLabel, rawSeries);
+    } else {
+      // Return raw values
+      return getSeriesForRetailer(hostLabel);
+    }
+  };
+
   // Build lightweight nodes for TopSkusTile from ALL legend hosts (not just selected)
   const nodesForSkus = (): RetailerNode[] => {
     const hosts = legendRetailers.map(r => r.name);
@@ -376,7 +465,7 @@ const CrossRetailAnalysis: React.FC = () => {
     items.sort((a, b) => b.skus - a.skus);
     setLegendRetailers(items);
     const defaults = items.slice(0, Math.min(4, items.length)).map(i => i.name);
-    setSelectedLegendHosts(defaults);
+    setRetailerSelectedLegendHosts(defaults);
     setSelectedChartRetailers(new Set(defaults.map(h => resolveChartKey(h))));
     const colorMap: Record<string, string> = {};
     defaults.forEach((h, idx) => { colorMap[h] = colorPalette[idx % colorPalette.length]; });
@@ -395,10 +484,10 @@ const CrossRetailAnalysis: React.FC = () => {
     setHoveredBrand(null);
   };
 
-  const handleRetailerToggle = (hostLabel: string) => {
-    setSelectedLegendHosts(prevHosts => {
+  const handleRetailerLegendToggle = (hostLabel: string) => {
+    setRetailerSelectedLegendHosts(prevHosts => {
       const exists = prevHosts.includes(hostLabel);
-      const nextHosts = exists ? prevHosts.filter(h => h !== hostLabel) : (prevHosts.length < maxRetailerSelections ? [...prevHosts, hostLabel] : prevHosts);
+      const nextHosts = exists ? prevHosts.filter(h => h !== hostLabel) : [...prevHosts, hostLabel];
       setSelectedChartRetailers(new Set(nextHosts.map(h => resolveChartKey(h))));
       const used: Record<string, string> = {};
       nextHosts.forEach((h, idx) => { used[h] = colorPalette[idx % colorPalette.length]; });
@@ -410,19 +499,33 @@ const CrossRetailAnalysis: React.FC = () => {
     });
   };
 
-  const isLegendItemDisabled = (host: string) => {
-    return !selectedLegendHosts.includes(host) && selectedLegendHosts.length >= maxRetailerSelections;
+  const onBrandLegendToggle = (brandLabel: string) => {
+    setBrandSelectedLegendHosts(prev => {
+      const exists = prev.includes(brandLabel);
+      const next = exists ? prev.filter(b => b !== brandLabel) : [...prev, brandLabel];
+      return next;
+    });
   };
 
-  const handleClearAll = () => {
-    setSelectedLegendHosts([]);
+  const isRetailerLegendItemDisabled = (host: string) => {
+    const selectedCount = retailerSelectedLegendHosts.filter(h => legendRetailers.some(r => r.name === h)).length;
+    return !retailerSelectedLegendHosts.includes(host) && selectedCount >= maxRetailerSelections;
+  };
+
+  const isBrandLegendItemDisabled = (brand: string) => {
+    const selectedCount = brandSelectedLegendHosts.length;
+    return !brandSelectedLegendHosts.includes(brand) && selectedCount >= maxRetailerSelections;
+  };
+
+  const onRetailerClearAll = () => {
+    setRetailerSelectedLegendHosts([]);
     setSelectedChartRetailers(new Set());
     setSeriesColorByRetailer({});
   };
 
-  const handleSelectAll = () => {
+  const onRetailerSelectAll = () => {
     const hostsToSelect = legendRetailers.slice(0, maxRetailerSelections).map(r => r.name);
-    setSelectedLegendHosts(hostsToSelect);
+    setRetailerSelectedLegendHosts(hostsToSelect);
     const keys = hostsToSelect.map(h => resolveChartKey(h));
     setSelectedChartRetailers(new Set(keys));
     const map: Record<string, string> = {};
@@ -433,11 +536,23 @@ const CrossRetailAnalysis: React.FC = () => {
     setLineTemplateIndexByHost(idxMap);
   };
 
+  const onBrandClearAll = () => {
+    setBrandSelectedLegendHosts([]);
+  };
+
+  const onBrandSelectAll = () => {
+    // For brands we sort by SKU count; limit to maxRetailerSelections from brandsFromHeader
+    const allBrands = selectedBrands.includes('All Brands') ? brandsOptions.filter(b => b !== 'All Brands') : selectedBrands;
+    const sortedBrands = getSortedBrands(allBrands);
+    const toSelect = sortedBrands.slice(0, maxRetailerSelections);
+    setBrandSelectedLegendHosts(toSelect);
+  };
+
   // Chart calculations
   const calculateYAxisScale = () => {
-    if (selectedLegendHosts.length === 0) return { min: 0, max: 100, steps: [0, 25, 50, 75, 100] };
+    if (retailerSelectedLegendHosts.length === 0) return { min: 0, max: 100, steps: [0, 25, 50, 75, 100] };
     
-    const sampleData = selectedLegendHosts.map(h => getSeriesForRetailer(h)).flat();
+    const sampleData = retailerSelectedLegendHosts.map(h => getSeriesForRetailerInMode(h)).flat();
     const min = Math.min(...sampleData);
     const max = Math.max(...sampleData);
     
@@ -458,7 +573,7 @@ const CrossRetailAnalysis: React.FC = () => {
   const modeLabel = compareTo === 'Year over Year' ? 'YoY' : 'PoP';
 
   const getInsightSeries = (): Series[] => {
-    return selectedLegendHosts.map(host => {
+    return retailerSelectedLegendHosts.map(host => {
       const current = getSeriesForRetailer(host);
       const isYoY = modeLabel === 'YoY';
       
@@ -482,7 +597,7 @@ const CrossRetailAnalysis: React.FC = () => {
   };
 
   const dynamicInsight = useMemo(() => {
-    if (selectedLegendHosts.length === 0) {
+    if (retailerSelectedLegendHosts.length === 0) {
       return {
         headline: 'No retailers selected.',
         sentence: 'Select retailers from the legend to see insights.',
@@ -532,7 +647,7 @@ const CrossRetailAnalysis: React.FC = () => {
       });
 
       // Only consider selected legend hosts as candidates for the highlight
-      const insight = pickRetailerMixInsight(mixSeries, { eligible: new Set(selectedLegendHosts) });
+      const insight = pickRetailerMixInsight(mixSeries, { eligible: new Set(retailerSelectedLegendHosts) });
       const chips: Array<{ text: string; tone: 'pos' | 'neg' | 'neu' }> = [];
       if (insight.tags.pop) {
         const tone: 'pos' | 'neg' | 'neu' = insight.tags.pop.startsWith('+') ? 'pos' : insight.tags.pop.startsWith('−') ? 'neg' : 'neu';
@@ -597,7 +712,7 @@ const CrossRetailAnalysis: React.FC = () => {
       sentence: insight.sentence,
       chips
     };
-  }, [selectedLegendHosts, compareTo, activeTab]);
+  }, [retailerSelectedLegendHosts, compareTo, activeTab]);
 
   // Initialize legend on load
   useEffect(() => {
@@ -606,7 +721,7 @@ const CrossRetailAnalysis: React.FC = () => {
     items.sort((a, b) => b.skus - a.skus);
     setLegendRetailers(items);
     const defaults = items.slice(0, Math.min(4, items.length)).map(i => i.name);
-    setSelectedLegendHosts(defaults);
+    setRetailerSelectedLegendHosts(defaults);
     setSelectedChartRetailers(new Set(defaults.map(h => resolveChartKey(h))));
     const colorMap: Record<string, string> = {};
     defaults.forEach((h, idx) => { colorMap[h] = colorPalette[idx % colorPalette.length]; });
@@ -726,7 +841,7 @@ const CrossRetailAnalysis: React.FC = () => {
           isNavbarPinned ? 'px-16 py-8' : 'px-16 py-6'
         }`}>
           <InfoCard />
-          <KPIRow onNavigateToTab={(tab) => {
+          <KPIRow dateRange={dateRange} selectedBrandName={brandSel} onNavigateToTab={(tab) => {
             setActiveTab(tab);
             // Scroll to MainChart section
             setTimeout(() => {
@@ -751,7 +866,8 @@ const CrossRetailAnalysis: React.FC = () => {
             <MainChart
               activeTab={activeTab}
               setActiveTab={setActiveTab}
-            selectedLegendHosts={selectedLegendHosts}
+            retailerSelectedLegendHosts={retailerSelectedLegendHosts}
+            brandSelectedLegendHosts={brandSelectedLegendHosts}
             selectedBrandName={brandSel}
             yAxisScale={yAxisScale}
             reversedSteps={reversedSteps}
@@ -763,17 +879,41 @@ const CrossRetailAnalysis: React.FC = () => {
             setChartHoverPos={setChartHoverPos}
             legendRetailers={legendRetailers}
             maxRetailerSelections={maxRetailerSelections}
-            onRetailerToggle={handleRetailerToggle}
-            onClearAll={handleClearAll}
-            onSelectAll={handleSelectAll}
-            isLegendItemDisabled={isLegendItemDisabled}
+            onRetailerLegendToggle={handleRetailerLegendToggle}
+            onBrandLegendToggle={onBrandLegendToggle}
+            onRetailerClearAll={onRetailerClearAll}
+            onBrandClearAll={onBrandClearAll}
+            onRetailerSelectAll={onRetailerSelectAll}
+            onBrandSelectAll={onBrandSelectAll}
+            isRetailerLegendItemDisabled={isRetailerLegendItemDisabled}
+            isBrandLegendItemDisabled={isBrandLegendItemDisabled}
             dynamicInsight={dynamicInsight}
+            brandsFromHeader={selectedBrands}
             />
           </div>
 
-          {/* New full-width tile below the entire graph/tabs: Top performing SKUs */}
+          {/* Brand Strongholds Tile (feature-flagged) */}
+          {brandStrongholdsEnabled && (
+            <div className="mt-10" data-strongholds-section>
+              <RetailerBrandShareTile
+                legendRetailers={legendRetailers}
+                selectedBrandName={brandSel}
+                selectedBrandsHeader={selectedBrands}
+                getSeriesForRetailer={getSeriesForRetailer}
+                dateRange={dateRange}
+              />
+            </div>
+          )}
+
+          {/* Full-width tile below: Top performing SKUs */}
           <div className="mt-10">
-            <TopSkusTile retailers={nodesForSkus()} selectedBrandName={brandSel} selectedBrandsHeader={selectedBrands} showKPIs={tableKPIsEnabled} showFilters={tableFiltersEnabled} />
+            <TopSkusTile
+              retailers={nodesForSkus()}
+              selectedBrandName={brandSel}
+              selectedBrandsHeader={selectedBrands}
+              showKPIs={tableKPIsEnabled}
+              showFilters={tableFiltersEnabled}
+            />
           </div>
         </div>
       </div>
@@ -787,13 +927,13 @@ const CrossRetailAnalysis: React.FC = () => {
       
       <ChartHoverTooltip
         hoveredDateIdx={hoveredDateIdx}
-        selectedLegendHosts={selectedLegendHosts}
+        selectedLegendHosts={retailerSelectedLegendHosts}
         chartHoverPos={chartHoverPos}
         dateLabels={dateLabels7}
-        getSeriesForRetailer={getSeriesForRetailer}
+        getSeriesForRetailer={getSeriesForRetailerInMode}
         seriesColorByRetailer={seriesColorByRetailer}
         formatSkus={formatSkus}
-        mode={activeTab === 'brand-performance' ? 'share' : 'views'}
+        mode={activeTab === 'retailer-growth' ? 'brandShare' : activeTab === 'brand-performance' ? 'share' : 'views'}
         allHeaderHosts={legendRetailers.map(r => r.name)}
       />
     </div>

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { retailerOptionsWithRegions, RetailerOption } from '../data/retailerOptions';
 
 interface HeaderMultiSelectProps {
   label: string;
@@ -13,7 +14,9 @@ const HeaderMultiSelect: React.FC<HeaderMultiSelectProps> = ({ label, value, opt
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
+  const [regionMetadataEnabled, setRegionMetadataEnabled] = useState(true);
   const ref = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -21,6 +24,25 @@ const HeaderMultiSelect: React.FC<HeaderMultiSelectProps> = ({ label, value, opt
     };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
+  }, []);
+
+  useEffect(() => {
+    // Load initial state
+    const saved = localStorage.getItem('regionMetadataEnabled');
+    if (saved !== null) {
+      setRegionMetadataEnabled(JSON.parse(saved));
+    }
+
+    // Listen for toggle events
+    const handleRegionMetadataToggle = (event: CustomEvent) => {
+      setRegionMetadataEnabled(event.detail.enabled);
+    };
+
+    window.addEventListener('regionMetadataToggle', handleRegionMetadataToggle as EventListener);
+    
+    return () => {
+      window.removeEventListener('regionMetadataToggle', handleRegionMetadataToggle as EventListener);
+    };
   }, []);
 
   const handleDropdownToggle = () => {
@@ -41,13 +63,34 @@ const HeaderMultiSelect: React.FC<HeaderMultiSelectProps> = ({ label, value, opt
           setDropdownPosition('bottom');
         }
       }
+      
+      // Focus the search input when opening
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 0);
     }
     setOpen(!open);
   };
 
-  const filteredOptions = options.filter(opt => 
-    opt.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Get retailer options with regions for enhanced search
+  const retailerOptionsMap = new Map(retailerOptionsWithRegions.map(r => [r.name, r]));
+  
+  const filteredOptions = options.filter(opt => {
+    const searchLower = searchTerm.toLowerCase();
+    const retailerOption = retailerOptionsMap.get(opt);
+    
+    // Search in retailer name
+    if (opt.toLowerCase().includes(searchLower)) {
+      return true;
+    }
+    
+    // Search in region metadata if available
+    if (retailerOption?.region && retailerOption.region.toLowerCase().includes(searchLower)) {
+      return true;
+    }
+    
+    return false;
+  });
 
                 const handleToggle = (option: string) => {
                 // Handle "All Retailers" - special behavior
@@ -140,11 +183,12 @@ const HeaderMultiSelect: React.FC<HeaderMultiSelectProps> = ({ label, value, opt
               </svg>
             </div>
             <input
+              ref={searchInputRef}
               type="text"
-              placeholder="Search or select brands..."
+              placeholder="Search retailers..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-[528px] left-12 top-[10px] absolute text-[#B6BEC6] text-[14px] font-normal leading-[20px] border-0 focus:outline-none focus:ring-0 bg-transparent placeholder-[#B6BEC6]"
+              className="w-[528px] left-12 top-[10px] absolute text-[#092540] text-[14px] font-normal leading-[20px] border-0 focus:outline-none focus:ring-0 bg-transparent placeholder-[#B6BEC6]"
               style={{ fontFamily: 'Roboto, sans-serif' }}
               onClick={(e) => e.stopPropagation()}
             />
@@ -258,21 +302,28 @@ const HeaderMultiSelect: React.FC<HeaderMultiSelectProps> = ({ label, value, opt
                             className="h-11 relative w-full bg-white cursor-pointer hover:bg-gray-50 flex items-center justify-between px-4 py-3" 
                             onClick={() => handleToggle(opt)}
                           >
-                            <div className="flex items-center gap-2">
-                              <div className="w-5 h-5 relative">
-                                {value.includes(opt) ? (
-                                  <div className="w-5 h-5 bg-[#3E74FE] rounded flex items-center justify-center">
-                                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                    </svg>
-                                  </div>
-                                ) : (
-                                  <div className="w-5 h-5 border border-gray-300 rounded"></div>
-                                )}
+                            <div className="flex items-center justify-between w-full">
+                              <div className="flex items-center gap-2">
+                                <div className="w-5 h-5 relative">
+                                  {value.includes(opt) ? (
+                                    <div className="w-5 h-5 bg-[#3E74FE] rounded flex items-center justify-center">
+                                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                      </svg>
+                                    </div>
+                                  ) : (
+                                    <div className="w-5 h-5 border border-gray-300 rounded"></div>
+                                  )}
+                                </div>
+                                <div className="text-[#092540] text-[14px] font-normal leading-[20px]" style={{ fontFamily: 'Roboto, sans-serif' }}>
+                                  {opt}
+                                </div>
                               </div>
-                              <div className="text-[#092540] text-[14px] font-normal leading-[20px]" style={{ fontFamily: 'Roboto, sans-serif' }}>
-                                {opt}
-                              </div>
+                              {regionMetadataEnabled && retailerOptionsMap.get(opt)?.region && (
+                                <div className="text-[#B6BEC6] text-[12px] font-normal leading-[16px]" style={{ fontFamily: 'Roboto, sans-serif' }}>
+                                  {retailerOptionsMap.get(opt)?.region}
+                                </div>
+                              )}
                             </div>
                           </div>
                                                 ))}

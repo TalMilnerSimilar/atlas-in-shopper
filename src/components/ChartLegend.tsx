@@ -28,6 +28,7 @@ const ChartLegend: React.FC<ChartLegendProps> = ({
   formatSkus,
   isLegendItemDisabled,
 }) => {
+  const selectedCount = selectedLegendHosts.filter(h => legendRetailers.some(r => r.name === h)).length;
   return (
     <div className="bg-white h-[347px] rounded border border-[#e6e9ec] w-[254px]">
       <div className="flex flex-col h-[347px] items-start justify-start overflow-clip p-0 w-[254px]">
@@ -64,7 +65,9 @@ const ChartLegend: React.FC<ChartLegendProps> = ({
                   onClick={() => !isDisabled && onRetailerToggle(retailer.name)}
                 >
                   {retailer.name}
-                  <span className="text-[#b6bec6]"> - {formatSkus(retailer.skus)} SKUs</span>
+                  {retailer.skus > 0 && (
+                    <span className="text-[#b6bec6]"> - {formatSkus(retailer.skus)} SKUs</span>
+                  )}
                 </span>
               </div>
             );
@@ -76,10 +79,10 @@ const ChartLegend: React.FC<ChartLegendProps> = ({
           <div className="flex flex-row gap-1.5 items-start justify-start p-0 text-[12px] leading-4 whitespace-nowrap" style={{ fontFamily: 'DM Sans, sans-serif' }}>
             <button 
               className={`flex flex-col justify-center text-center transition-opacity cursor-pointer ${
-                selectedLegendHosts.length === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-[#195afe] hover:opacity-75'
+                selectedCount === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-[#195afe] hover:opacity-75'
               }`}
               onClick={onClearAll}
-              disabled={selectedLegendHosts.length === 0}
+              disabled={selectedCount === 0}
             >
               Clear all
             </button>
@@ -88,17 +91,17 @@ const ChartLegend: React.FC<ChartLegendProps> = ({
             </div>
             <button 
               className={`flex flex-col justify-center text-center transition-opacity cursor-pointer ${
-                selectedLegendHosts.length === maxRetailerSelections ? 'text-gray-400 cursor-not-allowed' : 'text-[#195afe] hover:opacity-75'
+                selectedCount === maxRetailerSelections ? 'text-gray-400 cursor-not-allowed' : 'text-[#195afe] hover:opacity-75'
               }`}
               onClick={onSelectAll}
-              disabled={selectedLegendHosts.length === maxRetailerSelections}
+              disabled={selectedCount === maxRetailerSelections}
             >
               Select Top
             </button>
           </div>
           <div className="flex flex-row gap-1.5 items-start justify-start p-0 text-right" style={{ fontFamily: 'Roboto, sans-serif' }}>
             <div className="text-[12px] leading-[18px] font-normal text-[#6b7c8c] whitespace-nowrap">
-              {selectedLegendHosts.length}/{maxRetailerSelections}
+              {selectedCount}/{maxRetailerSelections}
             </div>
             <div className="flex flex-col h-[18px] justify-end text-[10px] leading-4 font-normal text-[#b6bec6] w-[42px]">
               Out of {legendRetailers.length}

@@ -13,6 +13,7 @@ import KPIRow from '../components/KPIRow';
 import MarketPositionChart from '../components/MarketPositionChart';
 import MainChart from '../components/MainChart';
 import TopSkusTile from '../components/TopSkusTile';
+import RetailerBrandShareTile from '../components/RetailerBrandShareTile';
 import BrandTooltip from '../components/Tooltips/BrandTooltip';
 import ChartHoverTooltip from '../components/Tooltips/ChartHoverTooltip';
 import { RetailerNode } from '../analytics/opportunity';
@@ -36,6 +37,7 @@ const CrossRetailAnalysis: React.FC = () => {
   const [hoveredDateIdx, setHoveredDateIdx] = useState<number | null>(null);
   const [chartHoverPos, setChartHoverPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [marketPositionEnabled, setMarketPositionEnabled] = useState(true);
+  const [brandStrongholdsEnabled, setBrandStrongholdsEnabled] = useState(true);
 
   // Form state
   const [dateRange, setDateRange] = useState('Jun 2024 - Jul 2024');
@@ -101,6 +103,31 @@ const CrossRetailAnalysis: React.FC = () => {
     return () => {
       window.removeEventListener('marketPositionToggle', handleMarketPositionToggle as EventListener);
     };
+  }, []);
+
+  // Listen for Brand Strongholds toggle
+  useEffect(() => {
+    const saved = localStorage.getItem('brandStrongholdsEnabled');
+    if (saved !== null) {
+      setBrandStrongholdsEnabled(JSON.parse(saved));
+    }
+
+    const handleBrandStrongholdsToggle = (event: CustomEvent) => {
+      setBrandStrongholdsEnabled(event.detail.enabled);
+    };
+
+    window.addEventListener('brandStrongholdsToggle', handleBrandStrongholdsToggle as EventListener);
+    return () => window.removeEventListener('brandStrongholdsToggle', handleBrandStrongholdsToggle as EventListener);
+  }, []);
+
+  // Listen for scroll-to-Brand-Strongholds event
+  useEffect(() => {
+    const handleScrollToStrongholds = () => {
+      const el = document.querySelector('[data-strongholds-section]') as HTMLElement | null;
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    window.addEventListener('scrollToBrandStrongholds', handleScrollToStrongholds as EventListener);
+    return () => window.removeEventListener('scrollToBrandStrongholds', handleScrollToStrongholds as EventListener);
   }, []);
 
   // Table KPIs state and listener
@@ -750,25 +777,44 @@ const CrossRetailAnalysis: React.FC = () => {
             <MainChart
               activeTab={activeTab}
               setActiveTab={setActiveTab}
-            selectedLegendHosts={selectedLegendHosts}
-            selectedBrandName={brandSel}
-            yAxisScale={yAxisScale}
-            reversedSteps={reversedSteps}
-            formatSkus={formatSkus}
-            getSeriesForRetailer={getSeriesForRetailer}
-            seriesColorByRetailer={seriesColorByRetailer}
-            hoveredDateIdx={hoveredDateIdx}
-            setHoveredDateIdx={setHoveredDateIdx}
-            setChartHoverPos={setChartHoverPos}
-            legendRetailers={legendRetailers}
-            maxRetailerSelections={maxRetailerSelections}
-            onRetailerToggle={handleRetailerToggle}
-            onClearAll={handleClearAll}
-            onSelectAll={handleSelectAll}
-            isLegendItemDisabled={isLegendItemDisabled}
-            dynamicInsight={dynamicInsight}
+              retailerSelectedLegendHosts={selectedLegendHosts}
+              brandSelectedLegendHosts={[]}
+              selectedBrandName={brandSel}
+              yAxisScale={yAxisScale}
+              reversedSteps={reversedSteps}
+              formatSkus={formatSkus}
+              getSeriesForRetailer={getSeriesForRetailer}
+              seriesColorByRetailer={seriesColorByRetailer}
+              hoveredDateIdx={hoveredDateIdx}
+              setHoveredDateIdx={setHoveredDateIdx}
+              setChartHoverPos={setChartHoverPos}
+              legendRetailers={legendRetailers}
+              maxRetailerSelections={maxRetailerSelections}
+              onRetailerLegendToggle={handleRetailerToggle}
+              onBrandLegendToggle={() => {}}
+              onRetailerClearAll={handleClearAll}
+              onBrandClearAll={() => {}}
+              onRetailerSelectAll={handleSelectAll}
+              onBrandSelectAll={() => {}}
+              isRetailerLegendItemDisabled={isLegendItemDisabled}
+              isBrandLegendItemDisabled={() => false}
+              dynamicInsight={dynamicInsight}
+              brandsFromHeader={selectedBrands}
             />
           </div>
+
+          {/* Brand Strongholds Tile (feature-flagged) */}
+          {brandStrongholdsEnabled && (
+            <div className="mt-10" data-strongholds-section>
+              <RetailerBrandShareTile
+                legendRetailers={legendRetailers}
+                selectedBrandName={brandSel}
+                selectedBrandsHeader={selectedBrands}
+                getSeriesForRetailer={getSeriesForRetailer}
+                dateRange={dateRange}
+              />
+            </div>
+          )}
 
           {/* New full-width tile below the entire graph/tabs: Top performing SKUs */}
           <div className="mt-10">

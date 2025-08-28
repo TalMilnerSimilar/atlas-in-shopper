@@ -4,11 +4,13 @@ import BrandShareTab from './TabContent/BrandShareTab';
 import RetailerGrowthTab from './TabContent/RetailerGrowthTab';
 import OpportunityMatrixTab from './TabContent/OpportunityMatrixTab';
 import CompetitiveLandscapeTab from './TabContent/CompetitiveLandscapeTab';
+import BrandCompetitiveLandscapeTab from './TabContent/BrandCompetitiveLandscapeTab';
 
 interface MainChartProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  selectedLegendHosts: string[];
+  retailerSelectedLegendHosts: string[];
+  brandSelectedLegendHosts: string[];
   selectedBrandName: string;
   yAxisScale: {
     min: number;
@@ -24,21 +26,27 @@ interface MainChartProps {
   setChartHoverPos: (pos: { x: number; y: number }) => void;
   legendRetailers: Array<{ name: string; skus: number }>;
   maxRetailerSelections: number;
-  onRetailerToggle: (hostLabel: string) => void;
-  onClearAll: () => void;
-  onSelectAll: () => void;
-  isLegendItemDisabled: (host: string) => boolean;
+  onRetailerLegendToggle: (hostLabel: string) => void;
+  onBrandLegendToggle: (brandLabel: string) => void;
+  onRetailerClearAll: () => void;
+  onBrandClearAll: () => void;
+  onRetailerSelectAll: () => void;
+  onBrandSelectAll: () => void;
+  isRetailerLegendItemDisabled: (host: string) => boolean;
+  isBrandLegendItemDisabled: (host: string) => boolean;
   dynamicInsight: {
     headline: string;
     sentence: string;
     chips: Array<{ text: string; tone: 'pos' | 'neg' | 'neu' }>;
   };
+  brandsFromHeader: string[];
 }
 
 const MainChart: React.FC<MainChartProps> = ({
   activeTab,
   setActiveTab,
-  selectedLegendHosts,
+  retailerSelectedLegendHosts,
+  brandSelectedLegendHosts,
   selectedBrandName,
   yAxisScale,
   reversedSteps,
@@ -50,11 +58,16 @@ const MainChart: React.FC<MainChartProps> = ({
   setChartHoverPos,
   legendRetailers,
   maxRetailerSelections,
-  onRetailerToggle,
-  onClearAll,
-  onSelectAll,
-  isLegendItemDisabled,
+  onRetailerLegendToggle,
+  onBrandLegendToggle,
+  onRetailerClearAll,
+  onBrandClearAll,
+  onRetailerSelectAll,
+  onBrandSelectAll,
+  isRetailerLegendItemDisabled,
+  isBrandLegendItemDisabled,
   dynamicInsight,
+  brandsFromHeader,
 }) => {
   const [tooltipVisible, setTooltipVisible] = useState<string | null>(null);
   
@@ -64,6 +77,7 @@ const MainChart: React.FC<MainChartProps> = ({
     'brand-performance': true,
     'opportunity-matrix': true,
     'competitive-landscape': true,
+    'brand-competitive-landscape': true,
   });
 
   // Graph insights visibility state
@@ -85,6 +99,7 @@ const MainChart: React.FC<MainChartProps> = ({
       'brand-performance': loadTabState('brand-performance', 'brandPerformanceTabEnabled'),
       'opportunity-matrix': loadTabState('opportunity-matrix', 'opportunityMatrixTabEnabled'),
       'competitive-landscape': loadTabState('competitive-landscape', 'competitiveLandscapeTabEnabled'),
+      'brand-competitive-landscape': loadTabState('brand-competitive-landscape', 'brandCompetitiveLandscapeTabEnabled'),
     });
 
     // Load graph insights state
@@ -142,10 +157,11 @@ const MainChart: React.FC<MainChartProps> = ({
   }, [activeTab, setActiveTab]);
 
   const tabTooltips = {
-    'retailer-growth': 'Track how each retailer\'s views are trending over time. Shows absolute view counts and growth patterns.',
+    'retailer-growth': "Your brand's share within each retailer over time (% per week).",
     'brand-performance': 'See what percentage of your brand each retailer represents. Shows relative market share distribution.',
     'opportunity-matrix': 'Identify which retailers offer the best growth opportunities based on demand vs. your current presence.',
-    'competitive-landscape': 'Analyze retailer performance with total views vs YoY growth, sized by your brand performance within each retailer.'
+    'competitive-landscape': 'Analyze retailer performance with total views vs YoY growth, sized by your brand performance within each retailer.',
+    'brand-competitive-landscape': 'Head-to-head vs competitors: overlap demand (X), lead vs you in pp (Y); bubble = competitor views in the overlap.'
   };
       return (
       <div className={`bg-white border border-gray-200 rounded-lg mb-8 ${!graphInsightsEnabled ? 'h-[526px] flex flex-col' : ''}`}>
@@ -155,10 +171,11 @@ const MainChart: React.FC<MainChartProps> = ({
           <div className="flex flex-row w-full items-start justify-start min-h-px min-w-px p-0">
             {/* Render tabs dynamically with separators */}
             {[
-              { id: 'retailer-growth', title: 'Retailer Growth Over Time' },
+              { id: 'retailer-growth', title: 'Brand Share by Retailer' },
               { id: 'brand-performance', title: 'Retailers\' Share of the Brand' },
               { id: 'opportunity-matrix', title: 'Retailer Opportunity Matrix' },
               { id: 'competitive-landscape', title: 'Retailer Performance Analysis' },
+              { id: 'brand-competitive-landscape', title: 'Competitive Landscape' },
             ].filter(tab => tabVisibility[tab.id as keyof typeof tabVisibility]).map((tab, index, visibleTabs) => (
               <React.Fragment key={tab.id}>
                 <div 
@@ -204,14 +221,14 @@ const MainChart: React.FC<MainChartProps> = ({
       <div className={!graphInsightsEnabled ? 'flex-1 flex flex-col overflow-hidden' : ''}>
         {activeTab === 'brand-performance' && (
           <BrandShareTab
-            selectedLegendHosts={selectedLegendHosts}
+            selectedLegendHosts={retailerSelectedLegendHosts}
             legendRetailers={legendRetailers}
             maxRetailerSelections={maxRetailerSelections}
-            onRetailerToggle={onRetailerToggle}
-            onClearAll={onClearAll}
-            onSelectAll={onSelectAll}
+            onRetailerToggle={onRetailerLegendToggle}
+            onClearAll={onRetailerClearAll}
+            onSelectAll={onRetailerSelectAll}
             formatSkus={formatSkus}
-            isLegendItemDisabled={isLegendItemDisabled}
+            isLegendItemDisabled={isRetailerLegendItemDisabled}
             seriesColorByRetailer={seriesColorByRetailer}
             getSeriesForRetailer={getSeriesForRetailer}
             hoveredDateIdx={hoveredDateIdx}
@@ -224,7 +241,7 @@ const MainChart: React.FC<MainChartProps> = ({
         )}
         {activeTab === 'retailer-growth' && (
           <RetailerGrowthTab
-            selectedLegendHosts={selectedLegendHosts}
+            selectedLegendHosts={retailerSelectedLegendHosts}
             yAxisScale={yAxisScale}
             reversedSteps={reversedSteps}
             formatSkus={formatSkus}
@@ -235,25 +252,27 @@ const MainChart: React.FC<MainChartProps> = ({
             setChartHoverPos={setChartHoverPos}
             legendRetailers={legendRetailers}
             maxRetailerSelections={maxRetailerSelections}
-            onRetailerToggle={onRetailerToggle}
-            onClearAll={onClearAll}
-            onSelectAll={onSelectAll}
-            isLegendItemDisabled={isLegendItemDisabled}
+            onRetailerToggle={onRetailerLegendToggle}
+            onClearAll={onRetailerClearAll}
+            onSelectAll={onRetailerSelectAll}
+            isLegendItemDisabled={isRetailerLegendItemDisabled}
             dynamicInsight={dynamicInsight}
             showInsights={graphInsightsEnabled}
             fixedHeight={!graphInsightsEnabled}
+            valueMode="brandShare"
+            selectedBrandName={selectedBrandName}
           />
         )}
         {activeTab === 'opportunity-matrix' && (
           <OpportunityMatrixTab
-            selectedLegendHosts={selectedLegendHosts}
+            selectedLegendHosts={retailerSelectedLegendHosts}
             legendRetailers={legendRetailers}
             maxRetailerSelections={maxRetailerSelections}
-            onRetailerToggle={onRetailerToggle}
-            onClearAll={onClearAll}
-            onSelectAll={onSelectAll}
+            onRetailerToggle={onRetailerLegendToggle}
+            onClearAll={onRetailerClearAll}
+            onSelectAll={onRetailerSelectAll}
             formatSkus={formatSkus}
-            isLegendItemDisabled={isLegendItemDisabled}
+            isLegendItemDisabled={isRetailerLegendItemDisabled}
             seriesColorByRetailer={seriesColorByRetailer}
             showInsights={graphInsightsEnabled}
             fixedHeight={!graphInsightsEnabled}
@@ -262,14 +281,31 @@ const MainChart: React.FC<MainChartProps> = ({
         )}
         {activeTab === 'competitive-landscape' && (
           <CompetitiveLandscapeTab 
-            selectedLegendHosts={selectedLegendHosts}
+            selectedLegendHosts={retailerSelectedLegendHosts}
             legendRetailers={legendRetailers}
             maxRetailerSelections={maxRetailerSelections}
-            onRetailerToggle={onRetailerToggle}
-            onClearAll={onClearAll}
-            onSelectAll={onSelectAll}
+            onRetailerToggle={onRetailerLegendToggle}
+            onClearAll={onRetailerClearAll}
+            onSelectAll={onRetailerSelectAll}
             formatSkus={formatSkus}
-            isLegendItemDisabled={isLegendItemDisabled}
+            isLegendItemDisabled={isRetailerLegendItemDisabled}
+            seriesColorByRetailer={seriesColorByRetailer}
+            showInsights={graphInsightsEnabled}
+            fixedHeight={!graphInsightsEnabled}
+            uniformBubbles={!bubbleSizesEnabled}
+          />
+        )}
+        {activeTab === 'brand-competitive-landscape' && (
+          <BrandCompetitiveLandscapeTab
+            selectedLegendHosts={brandSelectedLegendHosts}
+            legendRetailers={legendRetailers}
+            brandsFromHeader={brandsFromHeader}
+            maxRetailerSelections={maxRetailerSelections}
+            onRetailerToggle={onBrandLegendToggle}
+            onClearAll={onBrandClearAll}
+            onSelectAll={onBrandSelectAll}
+            formatSkus={formatSkus}
+            isLegendItemDisabled={isBrandLegendItemDisabled}
             seriesColorByRetailer={seriesColorByRetailer}
             showInsights={graphInsightsEnabled}
             fixedHeight={!graphInsightsEnabled}

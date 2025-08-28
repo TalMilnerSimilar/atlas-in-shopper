@@ -70,6 +70,7 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
   const [brandPerformanceTabEnabled, setBrandPerformanceTabEnabled] = useState(true);
   const [opportunityMatrixTabEnabled, setOpportunityMatrixTabEnabled] = useState(true);
   const [competitiveLandscapeTabEnabled, setCompetitiveLandscapeTabEnabled] = useState(true);
+  const [brandCompetitiveLandscapeTabEnabled, setBrandCompetitiveLandscapeTabEnabled] = useState(true);
   
   // Graph insights state
   const [graphInsightsEnabled, setGraphInsightsEnabled] = useState(true);
@@ -89,6 +90,8 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
   
   // Header controls state
   const [groupedByRegionEnabled, setGroupedByRegionEnabled] = useState(true);
+  const [regionMetadataEnabled, setRegionMetadataEnabled] = useState(true);
+  const [brandStrongholdsEnabled, setBrandStrongholdsEnabled] = useState(true);
 
   // Load saved state on mount
   useEffect(() => {
@@ -126,6 +129,11 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
     const savedCompetitiveLandscape = localStorage.getItem('competitiveLandscapeTabEnabled');
     if (savedCompetitiveLandscape !== null) {
       setCompetitiveLandscapeTabEnabled(JSON.parse(savedCompetitiveLandscape));
+    }
+
+    const savedBrandCompetitiveLandscape = localStorage.getItem('brandCompetitiveLandscapeTabEnabled');
+    if (savedBrandCompetitiveLandscape !== null) {
+      setBrandCompetitiveLandscapeTabEnabled(JSON.parse(savedBrandCompetitiveLandscape));
     }
 
     // Load graph insights state
@@ -167,6 +175,16 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
     const savedGroupedByRegion = localStorage.getItem('groupedByRegionEnabled');
     if (savedGroupedByRegion !== null) {
       setGroupedByRegionEnabled(JSON.parse(savedGroupedByRegion));
+    }
+
+    const savedRegionMetadata = localStorage.getItem('regionMetadataEnabled');
+    if (savedRegionMetadata !== null) {
+      setRegionMetadataEnabled(JSON.parse(savedRegionMetadata));
+    }
+
+    const savedBrandStrongholds = localStorage.getItem('brandStrongholdsEnabled');
+    if (savedBrandStrongholds !== null) {
+      setBrandStrongholdsEnabled(JSON.parse(savedBrandStrongholds));
     }
 
     // Apply MVP defaults on first load (only if not previously set by user)
@@ -244,6 +262,14 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
     }));
   };
 
+  const handleBrandStrongholdsToggle = (enabled: boolean) => {
+    setBrandStrongholdsEnabled(enabled);
+    localStorage.setItem('brandStrongholdsEnabled', JSON.stringify(enabled));
+    window.dispatchEvent(new CustomEvent('brandStrongholdsToggle', {
+      detail: { enabled }
+    }));
+  };
+
   // Graph tab handlers
   const handleRetailerGrowthTabToggle = (enabled: boolean) => {
     setRetailerGrowthTabEnabled(enabled);
@@ -278,6 +304,15 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
     
     window.dispatchEvent(new CustomEvent('graphTabToggle', {
       detail: { tabId: 'competitive-landscape', enabled }
+    }));
+  };
+
+  const handleBrandCompetitiveLandscapeTabToggle = (enabled: boolean) => {
+    setBrandCompetitiveLandscapeTabEnabled(enabled);
+    localStorage.setItem('brandCompetitiveLandscapeTabEnabled', JSON.stringify(enabled));
+    
+    window.dispatchEvent(new CustomEvent('graphTabToggle', {
+      detail: { tabId: 'brand-competitive-landscape', enabled }
     }));
   };
 
@@ -344,6 +379,15 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
     }));
   };
 
+  const handleRegionMetadataToggle = (enabled: boolean) => {
+    setRegionMetadataEnabled(enabled);
+    localStorage.setItem('regionMetadataEnabled', JSON.stringify(enabled));
+    
+    window.dispatchEvent(new CustomEvent('regionMetadataToggle', {
+      detail: { enabled }
+    }));
+  };
+
   const handleResetAll = () => {
     // Reset all states to their default values (true)
     setKpiLinksEnabled(true);
@@ -360,6 +404,7 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
     setAggregateByBrandsEnabled(true);
     setAggregateByRetailersEnabled(true);
     setGroupedByRegionEnabled(true);
+    setRegionMetadataEnabled(true);
 
     // Clear all localStorage
     localStorage.removeItem('kpiLinksEnabled');
@@ -369,6 +414,7 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
     localStorage.removeItem('brandPerformanceTabEnabled');
     localStorage.removeItem('opportunityMatrixTabEnabled');
     localStorage.removeItem('competitiveLandscapeTabEnabled');
+    localStorage.removeItem('brandCompetitiveLandscapeTabEnabled');
     localStorage.removeItem('graphInsightsEnabled');
     localStorage.removeItem('bubbleSizesEnabled');
     localStorage.removeItem('tableKPIsEnabled');
@@ -376,6 +422,7 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
     localStorage.removeItem('aggregateByBrandsEnabled');
     localStorage.removeItem('aggregateByRetailersEnabled');
     localStorage.removeItem('groupedByRegionEnabled');
+    localStorage.removeItem('regionMetadataEnabled');
 
     // Dispatch events to notify all components
     window.dispatchEvent(new CustomEvent('kpiLinksToggle', { detail: { enabled: true } }));
@@ -392,6 +439,7 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
     window.dispatchEvent(new CustomEvent('aggregateTabToggle', { detail: { tabType: 'brands', enabled: true } }));
     window.dispatchEvent(new CustomEvent('aggregateTabToggle', { detail: { tabType: 'retailers', enabled: true } }));
     window.dispatchEvent(new CustomEvent('groupedByRegionToggle', { detail: { enabled: true } }));
+    window.dispatchEvent(new CustomEvent('regionMetadataToggle', { detail: { enabled: true } }));
   };
 
   if (!isOpen) return null;
@@ -431,8 +479,20 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
                 onClick={() => {
                   // MVP Preset
                   handleGroupedByRegionToggle(false);
+                  handleRegionMetadataToggle(true);
+                  handleKpiLinksToggle(true);
                   handleMarketPositionToggle(false);
+                  handleMarketPositionInsightToggle(true);
                   handleGraphInsightsToggle(false);
+                  handleBrandPerformanceTabToggle(false);
+                  handleRetailerGrowthTabToggle(true);
+                  handleOpportunityMatrixTabToggle(true);
+                  handleCompetitiveLandscapeTabToggle(true);
+                  handleBrandCompetitiveLandscapeTabToggle(true);
+                  handleBubbleSizesToggle(true);
+                  handleBrandStrongholdsToggle(true);
+                  handleTableKPIsToggle(true);
+                  handleTableFiltersToggle(true);
                   handleAggregateByBrandsToggle(false);
                   handleAggregateByRetailersToggle(false);
                 }}
@@ -468,13 +528,21 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
                 <h3 className="text-[16px] leading-[22px] font-medium text-[#092540]">Page Header</h3>
               </div>
               
-              <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
                 <ToggleItem
                   id="grouped-by-region"
                   label="Grouped by Region"
                   description="Show regional grouping in the retailer selector"
                   checked={groupedByRegionEnabled}
                   onChange={handleGroupedByRegionToggle}
+                />
+                
+                <ToggleItem
+                  id="region-metadata"
+                  label="Region Metadata"
+                  description="Show region labels next to retailer names"
+                  checked={regionMetadataEnabled}
+                  onChange={handleRegionMetadataToggle}
                 />
               </div>
             </div>
@@ -573,10 +641,18 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
                           
                           <ToggleItem
                             id="competitive-landscape-tab"
-                            label="Brand Competitive Landscape"
-                            description="Analyze competitive positioning"
+                            label="Retailer Performance Analysis"
+                            description="Analyze retailer performance trends"
                             checked={competitiveLandscapeTabEnabled}
                             onChange={handleCompetitiveLandscapeTabToggle}
+                          />
+                          
+                          <ToggleItem
+                            id="brand-competitive-landscape-tab"
+                            label="Competitive Landscape"
+                            description="Analyze brand competitive positioning"
+                            checked={brandCompetitiveLandscapeTabEnabled}
+                            onChange={handleBrandCompetitiveLandscapeTabToggle}
                           />
                         </div>
                       </div>
@@ -605,6 +681,28 @@ const SecretModificationMenu: React.FC<SecretModificationMenuProps> = ({ isOpen,
                 </div>
               </div>
   
+              {/* Brand Strongholds Section */}
+              <div className="border-b border-[#E6E9EC] pb-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 bg-[#195afe] rounded flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3v18h18M7 13l3 3 7-7" />
+                    </svg>
+                  </div>
+                  <h3 className="text-[16px] leading-[22px] font-medium text-[#092540]">Brand Strongholds</h3>
+                </div>
+
+                <div className="space-y-2">
+                  <ToggleItem
+                    id="brand-strongholds-tile"
+                    label="Brand Strongholds Tile"
+                    description="Show tile of top retailers by my brand share"
+                    checked={brandStrongholdsEnabled}
+                    onChange={handleBrandStrongholdsToggle}
+                  />
+                </div>
+              </div>
+
               {/* Data Tables Section */}
               <div>
               <div className="flex items-center gap-3 mb-4">

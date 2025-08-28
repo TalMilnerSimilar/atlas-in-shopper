@@ -13,6 +13,7 @@ const HeaderBrandsMultiSelect: React.FC<HeaderBrandsMultiSelectProps> = ({ label
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
   const ref = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -40,6 +41,11 @@ const HeaderBrandsMultiSelect: React.FC<HeaderBrandsMultiSelectProps> = ({ label
           setDropdownPosition('bottom');
         }
       }
+      
+      // Focus the search input when opening
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 0);
     }
     setOpen(!open);
   };
@@ -107,11 +113,12 @@ const HeaderBrandsMultiSelect: React.FC<HeaderBrandsMultiSelectProps> = ({ label
               </svg>
             </div>
             <input
+              ref={searchInputRef}
               type="text"
-              placeholder="Search or select brands..."
+              placeholder="Search brands..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-[528px] left-12 top-[10px] absolute text-[#B6BEC6] text-[14px] font-normal leading-[20px] border-0 focus:outline-none focus:ring-0 bg-transparent placeholder-[#B6BEC6]"
+              className="w-[528px] left-12 top-[10px] absolute text-[#092540] text-[14px] font-normal leading-[20px] border-0 focus:outline-none focus:ring-0 bg-transparent placeholder-[#B6BEC6]"
               style={{ fontFamily: 'Roboto, sans-serif' }}
               onClick={(e) => e.stopPropagation()}
             />

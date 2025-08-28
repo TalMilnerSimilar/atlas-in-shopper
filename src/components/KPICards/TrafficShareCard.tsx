@@ -4,15 +4,22 @@ import { Sparklines, SparklinesLine } from 'react-sparklines';
 interface TrafficShareCardProps {
   onNavigateToTab?: (tab: string) => void;
   fixedHeight?: boolean;
+  selectedBrandName?: string;
+  dateRange?: string;
 }
 
-const TrafficShareCard: React.FC<TrafficShareCardProps> = ({ onNavigateToTab, fixedHeight }) => {
+const TrafficShareCard: React.FC<TrafficShareCardProps> = ({ onNavigateToTab, fixedHeight, selectedBrandName, dateRange }) => {
   const sparklineContainerRef = useRef<HTMLDivElement | null>(null);
   const [sparklineWidth, setSparklineWidth] = useState<number>(0);
   const [trafficShare, setTrafficShare] = useState<string>('—');
   const [trendChange, setTrendChange] = useState<string>('—');
   const [isPositiveTrend, setIsPositiveTrend] = useState<boolean>(true);
   const [sparklineData, setSparklineData] = useState<number[]>([]);
+  const [weeklyPrevShares, setWeeklyPrevShares] = useState<number[]>([]);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const [currentSharePctNum, setCurrentSharePctNum] = useState<number>(0);
+  const [overallChangeInPP, setOverallChangeInPP] = useState<number>(0);
+  const [weeklyTotals, setWeeklyTotals] = useState<number[]>([]);
 
   // Calculate traffic share from retailer data
   useEffect(() => {
@@ -45,8 +52,9 @@ const TrafficShareCard: React.FC<TrafficShareCardProps> = ({ onNavigateToTab, fi
         });
 
         // Simulate "your brand" views with realistic variation between periods
-        // In a real app, this would come from selected brand data
-        const brandSeed = 'Apple'.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+        // Seed by selected brand so the line responds to user selection
+        const seedLabel = (selectedBrandName || 'Apple');
+        const brandSeed = seedLabel.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
         const baseShareAssumption = Math.max(0.15, Math.min(0.45, 0.25 + ((brandSeed % 100) / 500))); // 15-45% range
         
         // Add realistic variation between current and previous periods
@@ -78,28 +86,32 @@ const TrafficShareCard: React.FC<TrafficShareCardProps> = ({ onNavigateToTab, fi
         setTrafficShare(currentSharePct < 0.1 ? '<0.1%' : `${currentSharePct.toFixed(1)}%`);
         setTrendChange(`${changeInPP >= 0 ? '+' : ''}${changeInPP.toFixed(1)}pp`);
         setIsPositiveTrend(changeInPP >= 0);
+        setCurrentSharePctNum(currentSharePct);
+        setOverallChangeInPP(changeInPP);
 
-        // Create sparkline data that reflects the overall trend direction
+        // Create sparkline data reflecting actual weekly share
         const baseWeeklyShare = currentSharePct;
-        const trendDirection = changeInPP > 0 ? 1 : -1;
         const weeklyShares = brandCurrentViews.map((brandViews, i) => {
           const totalViews = totalCurrentViews[i];
           const actualShare = totalViews > 0 ? (brandViews / totalViews) * 100 : baseWeeklyShare;
-          
-          // Apply a progressive trend that aligns with the overall change
-          const progressFactor = i / 6; // 0 to 1 over the 7 weeks
-          const trendAdjustment = (changeInPP * progressFactor * 0.5); // Apply half the trend progressively
-          
-          return Math.max(0, actualShare + trendAdjustment);
+          return Math.max(0, actualShare);
         });
         setSparklineData(weeklyShares);
+
+        // Create previous-period weekly shares for delta on hover
+        const prevWeeklyShares = totalPrevViews.map((total, i) => {
+          if (total <= 0) return 0;
+          return Math.max(0, (brandPrevViews[i] / total) * 100);
+        });
+        setWeeklyPrevShares(prevWeeklyShares);
+        setWeeklyTotals(totalCurrentViews);
       })
       .catch(err => {
         console.error('Error loading traffic share data:', err);
         setTrafficShare('—');
         setTrendChange('—');
       });
-  }, []);
+  }, [selectedBrandName, dateRange]);
 
   // Measure sparkline container width to make the chart responsive
   useEffect(() => {
@@ -122,28 +134,65 @@ const TrafficShareCard: React.FC<TrafficShareCardProps> = ({ onNavigateToTab, fi
     };
   }, []);
 
+  // Determine displayed values (hovered vs aggregate)
+  const isHoveringPoint = hoveredIdx !== null && hoveredIdx >= 0 && hoveredIdx < sparklineData.length;
+  const displayShare = isHoveringPoint
+    ? sparklineData[hoveredIdx as number]
+    : currentSharePctNum;
+  const displayPrevShare = isHoveringPoint
+    ? (weeklyPrevShares[hoveredIdx as number] ?? displayShare)
+    : currentSharePctNum - overallChangeInPP;
+  const displayDelta = displayShare - displayPrevShare;
+  const displayShareStr = displayShare < 0.1 ? '<0.1%' : `${displayShare.toFixed(1)}%`;
+  const displayChangeStr = `${displayDelta >= 0 ? '+' : ''}${displayDelta.toFixed(1)}pp`;
+  const displayIsPositive = displayDelta >= 0;
+
+  const formatShort = (n: number): string => {
+    if (!Number.isFinite(n)) return '—';
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
+    if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, '')}K`;
+    return Math.round(n).toString();
+  };
+
   return (
-    <div className={`bg-white border border-gray-200 rounded-lg ${fixedHeight ? 'h-[259px] flex flex-col' : ''}`}>
+    <div className={`bg-white border border-[#e6e9ec] rounded-[6px] ${fixedHeight ? 'h-[300px] flex flex-col' : ''}`}>
       <div className="flex flex-col gap-1 px-6 pt-4 pb-4">
-        <h3 className="text-base font-medium text-gray-900 leading-5">My Brand Traffic Share</h3>
-        <span className="text-sm text-gray-500 leading-4">Brand views trend</span>
+        <h3 className="text-base font-medium text-[#092540] leading-5">My Brand Traffic Share</h3>
+        <span className="text-sm text-[#6b7c8c] leading-4">{selectedBrandName ? `${selectedBrandName}’s View trend` : 'Brand views trend'}</span>
       </div>
-      <div className={`border-t border-gray-200 pt-4 px-6 pb-4 ${fixedHeight ? 'flex-1 flex flex-col' : ''}`}>
-        <div className={`flex flex-col gap-2 ${fixedHeight ? 'flex-1' : ''}`}>
+      
+      {/* Divider */}
+      <div className="h-px bg-[#e6e9ec] w-full"></div>
+      
+      <div className={`px-6 pt-4 pb-4 ${fixedHeight ? 'flex-1 flex flex-col' : ''}`}>
+        <div className="flex flex-col gap-2 mb-8" style={{ marginBottom: 16 }}>
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
-              <span className="text-xl font-medium text-gray-900 tracking-wide">{trafficShare}</span>
-              <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                isPositiveTrend 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-red-100 text-red-800'
+              <span className="text-xl font-medium text-[#092540] tracking-wide">{displayShareStr}</span>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-[26px] tracking-[0.3px] ${
+                displayIsPositive 
+                  ? 'bg-[#e6faf5] text-[#009688]' 
+                  : 'bg-[#ffe6e6] text-[#bb3f3f]'
               }`}>
-                {trendChange}
+                {displayChangeStr}
               </span>
             </div>
-            <span className="text-xs text-gray-500">vs last period</span>
+            <span className="text-xs text-[#6b7c8c]">{dateRange || '[selected time range]'}</span>
           </div>
-          <div ref={sparklineContainerRef} className="w-full mb-4" style={{ height: '64px' }}>
+          <div
+            ref={sparklineContainerRef}
+            className="w-full mb-4 relative"
+            style={{ height: '64px' }}
+            onMouseMove={(e) => {
+              const el = sparklineContainerRef.current;
+              if (!el || sparklineWidth <= 0 || sparklineData.length === 0) return;
+              const rect = el.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const idx = Math.max(0, Math.min(sparklineData.length - 1, Math.round((x / Math.max(1, rect.width)) * (sparklineData.length - 1))));
+              setHoveredIdx(idx);
+            }}
+            onMouseLeave={() => setHoveredIdx(null)}
+          >
             {sparklineWidth > 0 && sparklineData.length > 0 && (
               <Sparklines 
                 data={sparklineData} 
@@ -155,15 +204,62 @@ const TrafficShareCard: React.FC<TrafficShareCardProps> = ({ onNavigateToTab, fi
                 <SparklinesLine color="#3B82F6" />
               </Sparklines>
             )}
+            {isHoveringPoint && (() => {
+              const n = sparklineData.length;
+              const minV = Math.min(...sparklineData);
+              const maxV = Math.max(...sparklineData);
+              const h = 64;
+              const x = (hoveredIdx as number) / Math.max(1, n - 1) * sparklineWidth;
+              const val = sparklineData[hoveredIdx as number];
+              const y = maxV === minV ? h / 2 : h - ((val - minV) / (maxV - minV)) * h;
+              const tipWidth = 300;
+              const tipHeight = 88;
+              const tipLeft = Math.max(0, Math.min(Math.round(x) + 8, sparklineWidth - tipWidth));
+              const tipTop = Math.max(0, Math.min(Math.round(y) - 8 - tipHeight, h - tipHeight));
+              const totalAtPoint = weeklyTotals[hoveredIdx as number] ?? 0;
+              return (
+                <>
+                  <div
+                    className="absolute"
+                    style={{ left: Math.round(x) - 3, top: Math.round(y) - 3, width: 6, height: 6, borderRadius: 9999, backgroundColor: '#3B82F6', boxShadow: '0 0 0 2px #ffffff' }}
+                  />
+                  <div
+                    className="absolute pointer-events-none z-10 bg-white rounded-[4px] shadow-[0px_1px_8px_rgba(9,37,64,0.08),0px_5px_24px_rgba(9,37,64,0.08)] p-4"
+                    style={{ left: tipLeft, top: tipTop, width: tipWidth }}
+                  >
+                    {/* Title + Subtitle */}
+                    <div className="flex flex-col gap-1 mb-3">
+                      <span className="text-[12px] font-medium text-[#092540]">My Brand Traffic Share</span>
+                      <span className="text-[12px] text-[#3a5166]">{dateRange || 'Selected time frame'}</span>
+                    </div>
+                    {/* Rows */}
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[12px] text-[#3a5166]">Traffic Share</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[12px] text-[#092540] font-bold">{displayShareStr}</span>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-[26px] tracking-[0.3px] ${displayIsPositive ? 'bg-[#e6faf5] text-[#009688]' : 'bg-[#ffe6e6] text-[#bb3f3f]'}`}>{displayChangeStr}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] text-[#3a5166]">Total Traffic</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[12px] text-[#092540] font-bold">{formatShort(totalAtPoint)}</span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-[26px] tracking-[0.3px] bg-[#f7f7f8] text-[#6b7c8c]">-</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         </div>
         {onNavigateToTab && (
-          <div className="border-t border-gray-200 pt-4 mt-4 text-center">
+          <div className="border-t border-[#e6e9ec] pt-4 mt-4 text-center">
             <button 
-              className="text-blue-600 text-sm hover:text-blue-700"
-              onClick={() => onNavigateToTab('brand-performance')}
+              className="text-[#195afe] text-sm hover:underline"
+              onClick={() => onNavigateToTab('retailer-growth')}
             >
-              View detailed traffic analysis
+              See {selectedBrandName || 'your brand'}'s share across different retailers
             </button>
           </div>
         )}

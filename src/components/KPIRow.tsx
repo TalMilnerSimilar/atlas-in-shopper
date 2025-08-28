@@ -5,9 +5,11 @@ import BestRetailerCard from './KPICards/BestRetailerCard';
 
 interface KPIRowProps {
   onNavigateToTab?: (tab: string) => void;
+  dateRange?: string;
+  selectedBrandName?: string;
 }
 
-const KPIRow: React.FC<KPIRowProps> = ({ onNavigateToTab }) => {
+const KPIRow: React.FC<KPIRowProps> = ({ onNavigateToTab, dateRange, selectedBrandName }) => {
   const [kpiLinksEnabled, setKpiLinksEnabled] = useState(true);
 
   useEffect(() => {
@@ -34,6 +36,8 @@ const KPIRow: React.FC<KPIRowProps> = ({ onNavigateToTab }) => {
       <TrafficShareCard 
         onNavigateToTab={kpiLinksEnabled ? onNavigateToTab : undefined} 
         fixedHeight={!kpiLinksEnabled}
+        selectedBrandName={selectedBrandName}
+        dateRange={dateRange}
       />
       <BestRetailerCard 
         onNavigateToTab={kpiLinksEnabled ? onNavigateToTab : undefined} 
@@ -42,6 +46,7 @@ const KPIRow: React.FC<KPIRowProps> = ({ onNavigateToTab }) => {
       <LeadingRetailersCard 
         onNavigateToTab={kpiLinksEnabled ? onNavigateToTab : undefined} 
         fixedHeight={!kpiLinksEnabled}
+        dateRange={dateRange}
       />
     </div>
   );
